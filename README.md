@@ -1,6 +1,6 @@
 # imgversus
 
-A simple image comparison slider. Drop in two or more images, drag the line to see the difference, and share the link.
+A simple image comparison tool. Drop in two or more images, click to flip between them or drag a slider, and share the link.
 
 **→ [imgversus.com](https://imgversus.com)**
 

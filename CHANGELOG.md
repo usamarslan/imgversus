@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.5 – 2026-10-29
+
+- The homepage still talked about dragging a slider, which isn't the default anymore. It now says what actually happens: click to flip between images, or use the slider if you like.
+
 ## 1.2.4 – 2026-10-29
 
 - A lot more room for images. Storage moved to Cloudflare R2, so big 4K PNGs aren't a problem anymore. Links you've already shared keep working.
