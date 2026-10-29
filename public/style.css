@@ -113,7 +113,7 @@ a { color: inherit; }
   background: var(--panel); border-bottom: 1px solid var(--line); flex: none;
 }
 .vbar h1 {
-  flex: 1; min-width: 0; margin: 0; font-size: 15px; font-weight: 600; color: var(--muted);
+  flex: 1; min-width: 0; margin: 0; font-size: 16px; font-weight: 700; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .vactions { display: flex; gap: 6px; }
@@ -202,13 +202,12 @@ a { color: inherit; }
 @media (max-width: 600px) {
   .narrow { display: inline; }
   .vbar { gap: 8px; }
-  .vbar h1, .brand-text { display: none; }
+  .vbar h1 { font-size: 14px; }
   .vactions { margin-left: auto; }
   .seg .lbl, .wide { display: none; }
   .vbar .btn { white-space: nowrap; }
   .vbar .btn:not(.icon) { padding: 8px 12px; }
   .vbar .btn.icon { padding: 7px 9px; }
-  #v-reset { display: none; }
   .seg button { padding: 5px 9px; }
   .picker select { font-size: 13px; padding: 6px 26px 6px 10px; }
   .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -273,12 +272,15 @@ a { color: inherit; }
 
 /* ---------- İpucu ve açıklama balonları ---------- */
 .hint {
-  position: absolute; left: 50%; bottom: 18px; transform: translate(-50%, 8px); pointer-events: none;
-  background: rgba(15,17,21,.85); color: #fff; font-weight: 600; font-size: 14px;
-  padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.15);
-  box-shadow: 0 4px 18px rgba(0,0,0,.4); white-space: nowrap; max-width: calc(100% - 32px);
-  overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .3s, transform .3s;
+  position: absolute; left: 50%; top: 60px; transform: translate(-50%, -8px); pointer-events: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px; text-align: center;
+  background: rgba(15,17,21,.88); color: #fff; font-size: 14px;
+  padding: 9px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,.15);
+  box-shadow: 0 4px 18px rgba(0,0,0,.4); width: max-content; max-width: calc(100% - 32px);
+  opacity: 0; transition: opacity .3s, transform .3s;
 }
+.hint strong { font-weight: 700; }
+.hint span { color: #b9bfca; font-size: 13px; }
 .hint.show { opacity: 1; transform: translate(-50%, 0); }
 
 [data-tip] { position: relative; }

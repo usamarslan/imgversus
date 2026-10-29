@@ -298,7 +298,7 @@ const viewer = (() => {
 
     $('#upload').hidden = true;
     $('#viewer').hidden = false;
-    $('#v-title').textContent = album.title || '';
+    $('#v-title').textContent = album.title || 'imgversus';
     document.title = (album.title ? album.title + ' – ' : '') + 'imgversus';
     $('#v-back').hidden = !opts.local;
     $('#v-copy').hidden = !!opts.local;
@@ -326,7 +326,11 @@ const viewer = (() => {
 
   // Resmin üstündeki "ne yapmalıyım" ipucu: ilk etkileşime kadar görünür, mod değişince tekrar çıkar
   function showHint() {
-    hintEl.textContent = t(mode === 'toggle' ? 'hintToggle' : 'hintSlide');
+    const main = document.createElement('strong');
+    main.textContent = t(mode === 'toggle' ? 'hintToggle' : 'hintSlide');
+    const sub = document.createElement('span');
+    sub.textContent = t('hintMode');
+    hintEl.replaceChildren(main, sub);
     hintEl.classList.add('show');
   }
 
@@ -487,8 +491,6 @@ const viewer = (() => {
     bound = true;
     selA.addEventListener('change', () => pick('a', selA.value));
     selB.addEventListener('change', () => pick('b', selB.value));
-    $('#v-swap').addEventListener('click', swap);
-    $('#v-reset').addEventListener('click', resetZoom);
     $('#v-copy').addEventListener('click', () => copyText(location.origin + location.pathname));
     window.addEventListener('resize', layout);
     $('#m-slide').addEventListener('click', () => setMode('slide'));

@@ -2,6 +2,12 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.2 – 2026-10-29
+
+- The title you give a comparison now shows at the top left of the link, where the imgversus name used to be.
+- The hint sits at the top now, and it also tells you that you can switch between click-to-switch and the slider up there.
+- Removed the swap and zoom-reset buttons from the top bar. They weren't pulling their weight; `S` and `0` on the keyboard still do the same thing.
+
 ## 1.2.1 – 2026-10-29
 
 - Click-to-switch is now the default. Click the image to flip between the two; the slider is still right there at the top if you prefer it.
