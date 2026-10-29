@@ -291,6 +291,7 @@ const viewer = (() => {
   let ready = false;
   let bound = false;
   let zoomTimer;
+  const TOP_BAND = 48;         // tıkla-geç modunda resmin üstünde isim için bırakılan boşluk
 
   function open(album, opts = {}) {
     images = album.images;
@@ -377,19 +378,23 @@ const viewer = (() => {
     $('#m-toggle').setAttribute('aria-pressed', m === 'toggle');
     stage.classList.toggle('toggle', m === 'toggle');
     showHint();
-    render();
+    if (ready) layout(); else render();
   }
 
   // Tıkla-geç modunda görünen resmi değiştir
   function flip() {
     shown = shown === 'a' ? 'b' : 'a';
     render();
+    hideHint();
     flash(images[shown === 'a' ? a : b].name);
   }
 
+  // Görünen resmin adını kısa süreliğine resmin hemen üstünde, ortada gösterir
   function flash(text) {
     if (!text) return;
     flashEl.textContent = text;
+    const imgTop = base.y + ty;
+    flashEl.style.top = Math.max(6, imgTop - flashEl.offsetHeight - 6) + 'px';
     flashEl.classList.add('show');
     clearTimeout(flashTimer);
     flashTimer = setTimeout(() => flashEl.classList.remove('show'), 700);
@@ -423,9 +428,10 @@ const viewer = (() => {
   function layout() {
     if (!ready) return;
     const W = stage.clientWidth, H = stage.clientHeight;
-    const s = Math.min(W / ref.w, H / ref.h);
+    const top = bandTop();
+    const s = Math.min(W / ref.w, (H - top) / ref.h);
     const w = ref.w * s, h = ref.h * s;
-    base = { x: (W - w) / 2, y: (H - h) / 2, w, h, s };
+    base = { x: (W - w) / 2, y: top + (H - top - h) / 2, w, h, s };
     frame.style.left = base.x + 'px';
     frame.style.top = base.y + 'px';
     frame.style.width = w + 'px';
@@ -437,8 +443,13 @@ const viewer = (() => {
   function clampPan() {
     const W = stage.clientWidth, H = stage.clientHeight;
     const fw = base.w * z, fh = base.h * z;
-    tx = fw <= W ? W / 2 - base.x - fw / 2 : Math.min(-base.x, Math.max(W - base.x - fw, tx));
-    ty = fh <= H ? H / 2 - base.y - fh / 2 : Math.min(-base.y, Math.max(H - base.y - fh, ty));
+    const top = bandTop();
+    tx = fw <= W + 0.5 ? W / 2 - base.x - fw / 2 : Math.min(-base.x, Math.max(W - base.x - fw, tx));
+    ty = fh <= H - top + 0.5 ? top + (H - top - fh) / 2 - base.y : Math.min(-base.y, Math.max(H - base.y - fh, ty));
+  }
+
+  function bandTop() {
+    return mode === 'toggle' ? TOP_BAND : 0;
   }
 
   function render() {

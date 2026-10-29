@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.6 – 2026-10-29
+
+- In click-to-switch mode, the image name used to pop up right in the middle of the picture, on top of the very thing you're trying to look at. It now shows for a moment just above the image instead.
+
 ## 1.2.5 – 2026-10-29
 
 - The homepage still talked about dragging a slider, which isn't the default anymore. It now says what actually happens: click to flip between images, or use the slider if you like.
