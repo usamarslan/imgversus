@@ -6,4 +6,4 @@ pages_build_output_dir = "public"
 # "npx wrangler kv namespace create IMAGES" komutunun verdiği id'yi buraya yaz.
 [[kv_namespaces]]
 binding = "IMAGES"
-id = "BURAYA_KV_ID"
+id = "4b63fc1cf5694dc3ad7d064f5fdebb13"
