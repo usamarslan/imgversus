@@ -1,6 +1,6 @@
 {
   "name": "imgversus",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "description": "Simple image comparison slider with shareable links. An imgsli alternative.",
   "scripts": {
