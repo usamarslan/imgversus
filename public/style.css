@@ -183,7 +183,7 @@ a { color: inherit; }
   position: absolute; left: 50%; transform: translateX(-50%); pointer-events: none;
   background: rgba(15,17,21,.78); border-radius: 8px; padding: 5px 10px; font-size: 13px; color: var(--muted);
 }
-.zoom-label { bottom: 12px; opacity: 0; transition: opacity .3s; }
+.zoom-label { top: 14px; opacity: 0; transition: opacity .3s; }
 .zoom-label.show { opacity: 1; }
 .v-status { top: 50%; transform: translate(-50%, -50%); font-size: 15px; padding: 12px 18px; text-align: center; }
 .v-status:empty { display: none; }
@@ -270,3 +270,24 @@ a { color: inherit; }
 .fine.retention { margin-top: 6px; }
 .fb-alt { margin: 4px 0 0; font-size: 14px; }
 .fb-alt a { color: var(--accent); }
+
+/* ---------- İpucu ve açıklama balonları ---------- */
+.hint {
+  position: absolute; left: 50%; bottom: 18px; transform: translate(-50%, 8px); pointer-events: none;
+  background: rgba(15,17,21,.85); color: #fff; font-weight: 600; font-size: 14px;
+  padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.15);
+  box-shadow: 0 4px 18px rgba(0,0,0,.4); white-space: nowrap; max-width: calc(100% - 32px);
+  overflow: hidden; text-overflow: ellipsis; opacity: 0; transition: opacity .3s, transform .3s;
+}
+.hint.show { opacity: 1; transform: translate(-50%, 0); }
+
+[data-tip] { position: relative; }
+[data-tip]::after {
+  content: attr(data-tip); position: absolute; top: calc(100% + 10px); left: 50%; transform: translate(-50%, -4px);
+  width: max-content; max-width: 260px; white-space: normal; text-align: left; z-index: 20;
+  background: #fff; color: #111; font-size: 13px; font-weight: 500; line-height: 1.4;
+  padding: 8px 11px; border-radius: 8px; box-shadow: 0 6px 24px rgba(0,0,0,.45);
+  opacity: 0; pointer-events: none; transition: opacity .15s, transform .15s;
+}
+[data-tip]:hover::after, [data-tip]:focus-visible::after { opacity: 1; transform: translate(-50%, 0); transition-delay: .25s; }
+@media (hover: none) { [data-tip]::after { display: none; } }

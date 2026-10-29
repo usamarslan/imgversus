@@ -140,8 +140,8 @@ Site `imgversus.com` adresinde yayında (Cloudflare Registrar, yıllık ~10,5 $,
 
 Her güncellemede sürüm numarası artar ve CHANGELOG.md'ye not düşülür. Sürüm numarası sitenin alt kısmında görünür, tıklayınca değişiklik listesi açılır.
 
-- Hata düzeltmesi: son rakam artar (1.0.0 → 1.0.1) → `npm version patch`
-- Yeni özellik: ortadaki rakam artar (1.0.1 → 1.1.0) → `npm version minor`
+- Varsayılan: her güncellemede son rakam artar (1.2.1 → 1.2.2) → `npm version patch`. x.y.9’dan sonra ortadaki rakam artar (1.2.9 → 1.3.0) → `npm version minor`
+- İlk ya da ortadaki rakam sadece sen istediğinde değişir
 
 Adımlar:
 

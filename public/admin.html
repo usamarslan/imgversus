@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Yönetim – imgversus</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23181b22'/%3E%3Cpath d='M5 6h11v20H5z' fill='%235b8cff'/%3E%3Cpath d='M16 6h11v20H16z' fill='%23ff8a5b'/%3E%3Cpath d='M15 3h2v26h-2z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    .admin { max-width: 1000px; }
+    .admin h2 { font-size: 17px; margin: 32px 0 10px; }
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+    .kpi { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; }
+    .kpi b { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+    .kpi span { color: var(--muted); font-size: 13px; }
+    .kpi .meter { height: 6px; background: var(--panel-2); border-radius: 3px; margin-top: 8px; overflow: hidden; }
+    .kpi .meter i { display: block; height: 100%; background: var(--accent); }
+    .kpi .meter i.warn { background: var(--accent-2); }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+    th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: var(--muted); font-weight: 600; font-size: 13px; }
+    td.num, th.num { text-align: right; }
+    .scroll { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
+    .thumb { width: 72px; height: 44px; object-fit: cover; border-radius: 4px; background: #0b0d10; display: block; }
+    .bar { display: inline-block; height: 8px; background: var(--accent); border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+    .fb { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; }
+    .fb .meta { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
+    .fb p { margin: 0; white-space: pre-wrap; }
+    .login { max-width: 360px; margin: 60px auto; }
+    .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .muted { color: var(--muted); }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><span class="logo"></span>imgversus</a>
+    <button id="logout" class="btn" hidden>Çıkış</button>
+  </header>
+
+  <main class="wrap admin">
+    <form id="login" class="login" hidden>
+      <h1>Yönetim</h1>
+      <p class="muted">Yönetici şifreni gir. Bu tarayıcıda hatırlanır.</p>
+      <input id="key" class="field" type="password" autocomplete="current-password" placeholder="Şifre" required>
+      <p id="err" class="msg"></p>
+      <div class="actions"><button class="btn primary">Giriş</button></div>
+    </form>
+    <div id="out"></div>
+  </main>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const mb = (b) => ((b || 0) / 1024 / 1024).toFixed(1) + ' MB';
+    const date = (ms) => new Date(ms).toLocaleString('tr-TR', { dateStyle: 'short', timeStyle: 'short' });
+    const store = {
+      get() { try { return localStorage.getItem('adminKey') || ''; } catch { return ''; } },
+      set(v) { try { v ? localStorage.setItem('adminKey', v) : localStorage.removeItem('adminKey'); } catch {} },
+    };
+
+    async function load(key) {
+      const res = await fetch('/api/admin', { headers: { authorization: `Bearer ${key}` } });
+      if (res.status === 401) throw new Error('auth');
+      if (!res.ok) throw new Error('http');
+      return res.json();
+    }
+
+    function render(d) {
+      const t = d.totals || {};
+      const used = (t.bytes || 0) / d.storageLimit;
+      const maxDay = Math.max(1, ...d.days.map((x) => x.views + x.albums));
+      $('#out').innerHTML = `
+        <div class="row"><h1>Yönetim</h1><button id="refresh" class="btn">Yenile</button></div>
+        <div class="kpis">
+          <div class="kpi"><b>${t.albums || 0}</b><span>Oluşturulan link</span></div>
+          <div class="kpi"><b>${t.images || 0}</b><span>Yüklenen resim</span></div>
+          <div class="kpi"><b>${t.views || 0}</b><span>Link görüntülenme</span></div>
+          <div class="kpi"><b>${t.feedback || 0}</b><span>Geri bildirim</span></div>
+          <div class="kpi"><b>${mb(t.bytes)}</b><span>Depolama (ücretsiz 1 GB'ın %${(used * 100).toFixed(1)}'i)</span>
+            <div class="meter"><i class="${used > 0.8 ? 'warn' : ''}" style="width:${Math.min(100, used * 100)}%"></i></div></div>
+        </div>
+
+        <h2>Son 30 gün</h2>
+        <div class="scroll"><table>
+          <tr><th>Gün</th><th class="num">Yeni link</th><th class="num">Görüntülenme</th><th></th></tr>
+          ${d.days.map((x) => `<tr><td>${x.day}</td><td class="num">${x.albums}</td><td class="num">${x.views}</td>
+            <td><span class="bar" style="width:${Math.round((x.views + x.albums) / maxDay * 160)}px"></span></td></tr>`).join('')
+            || '<tr><td colspan="4" class="muted">Henüz kayıt yok.</td></tr>'}
+        </table></div>
+
+        <h2>Son yüklenenler</h2>
+        <div class="scroll"><table>
+          <tr><th></th><th>Başlık / link</th><th>Tarih</th><th class="num">Resim</th><th class="num">Boyut</th><th class="num">Görüntülenme</th><th>Ülke</th></tr>
+          ${d.recent.map((r, i) => `<tr>
+            <td>${r.exists && i < 20 ? `<img class="thumb" loading="lazy" src="/i/${r.album}/0" alt="">` : ''}</td>
+            <td>${r.exists ? `<a href="/a/${r.album}" target="_blank" rel="noopener">${esc(r.title) || r.album}</a>` : `<span class="muted">${r.album} (silinmiş)</span>`}</td>
+            <td>${date(r.ts)}</td><td class="num">${r.images}</td><td class="num">${mb(r.bytes)}</td>
+            <td class="num">${r.views}</td><td>${esc(r.country)}</td></tr>`).join('')
+            || '<tr><td colspan="7" class="muted">Henüz yükleme yok.</td></tr>'}
+        </table></div>
+
+        <h2>Ülkeler (görüntülenme, son 30 gün)</h2>
+        <p>${d.countries.map((c) => `${esc(c.country)} <b>${c.n}</b>`).join(' · ') || '<span class="muted">Henüz yok.</span>'}</p>
+
+        <h2>Geri bildirimler</h2>
+        ${d.feedback.map((f) => `<div class="fb"><div class="meta">${date(Date.parse(f.created))} · ${f.email ? `<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>` : 'e-posta yok'} · ${esc(f.lang)}${f.country ? ', ' + esc(f.country) : ''}</div><p>${esc(f.message)}</p></div>`).join('')
+          || '<p class="muted">Henüz geri bildirim yok.</p>'}
+        <p class="muted" style="margin-top:32px">Sayfa ziyaretleri (kaç kişi girdi, nereden geldi) için Cloudflare → Compute → Workers &amp; Pages → imgversus → Metrics → Web Analytics.</p>`;
+      $('#refresh').onclick = () => start(store.get());
+    }
+
+    async function start(key) {
+      $('#out').innerHTML = '<p class="muted">Yükleniyor…</p>';
+      try {
+        render(await load(key));
+        $('#login').hidden = true;
+        $('#logout').hidden = false;
+      } catch (e) {
+        $('#out').innerHTML = '';
+        $('#login').hidden = false;
+        $('#logout').hidden = true;
+        $('#err').textContent = e.message === 'auth' ? (key ? 'Şifre yanlış.' : '') : 'Veriler alınamadı, tekrar dene.';
+        if (e.message === 'auth') store.set('');
+      }
+    }
+
+    $('#login').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const key = $('#key').value.trim();
+      store.set(key);
+      start(key);
+    });
+    $('#logout').addEventListener('click', () => { store.set(''); location.reload(); });
+    start(store.get());
+  </script>
+</body>
+</html>

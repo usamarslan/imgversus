@@ -1,6 +1,14 @@
 # Changelog
 
-Every update to imgversus gets a version number and a short note here. Bug fixes bump the last number (1.0.1), new features bump the middle one (1.1.0).
+Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
+
+## 1.2.1 – 2026-10-29
+
+- Click-to-switch is now the default. Click the image to flip between the two; the slider is still right there at the top if you prefer it.
+- A small hint on the image tells you what to do, and hovering the mode buttons explains what each one does.
+- The homepage section now says what imgversus is for, not just why I made it.
+- Shared links show a proper preview on Reddit, Discord and the like, with the title and the first image.
+- Added a sitemap so search engines can find the site.
 
 ## 1.2.0 – 2026-10-29
 

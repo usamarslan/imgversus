@@ -275,12 +275,13 @@ const viewer = (() => {
   const zoomLabel = $('#zoom-label');
   const status = $('#v-status');
   const flashEl = $('#flash');
+  const hintEl = $('#hint');
   const fullBtn = $('#v-full');
   const viewerEl = $('#viewer');
 
   let images = [];
   let a = 0, b = 1;
-  let mode = 'slide';          // 'slide' = kaydırıcı, 'toggle' = tıkla-geç
+  let mode = 'toggle';         // 'toggle' = tıkla-geç (varsayılan), 'slide' = kaydırıcı
   let shown = 'a';             // tıkla-geç modunda görünen taraf
   let flashTimer;
   let pos = 0.5;               // kaydırıcı konumu (sahne genişliğinin oranı)
@@ -319,7 +320,18 @@ const viewer = (() => {
     images.slice(1).forEach((im) => { new Image().src = im.src; });
 
     if (!bound) bind();
+    setMode(mode);
     stage.focus({ preventScroll: true });
+  }
+
+  // Resmin üstündeki "ne yapmalıyım" ipucu: ilk etkileşime kadar görünür, mod değişince tekrar çıkar
+  function showHint() {
+    hintEl.textContent = t(mode === 'toggle' ? 'hintToggle' : 'hintSlide');
+    hintEl.classList.add('show');
+  }
+
+  function hideHint() {
+    hintEl.classList.remove('show');
   }
 
   function close() {
@@ -360,7 +372,7 @@ const viewer = (() => {
     $('#m-slide').setAttribute('aria-pressed', m === 'slide');
     $('#m-toggle').setAttribute('aria-pressed', m === 'toggle');
     stage.classList.toggle('toggle', m === 'toggle');
-    if (m === 'toggle') flash(images[shown === 'a' ? a : b]?.name);
+    showHint();
     render();
   }
 
@@ -487,6 +499,7 @@ const viewer = (() => {
     onLangChange(updateFullTitle);
     document.addEventListener('fullscreenchange', onFullscreenChange);
     document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    onLangChange(() => { if (hintEl.classList.contains('show')) showHint(); });
 
     const pointers = new Map();
     let drag = null; // 'slide' | 'pan' | 'pinch' | 'tap'
@@ -502,6 +515,7 @@ const viewer = (() => {
     stage.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.picker') || !ready) return;
       if (e.button !== 0 && e.pointerType === 'mouse') return;
+      hideHint();
       stage.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, local(e));
       if (pointers.size === 2) {

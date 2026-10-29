@@ -4,19 +4,20 @@ A simple image comparison slider. Drop in two or more images, drag the line to s
 
 **→ [imgversus.com](https://imgversus.com)**
 
-## Why I made this
+## What it's for
 
-I used imgsli for years, mostly for comparing game screenshots on NeoGAF and Reddit. Quality mode vs. performance mode, ray tracing on vs. off, that kind of thing. When it shut down I tried pretty much every alternative I could find, and most of them were either cluttered or a pain to use.
+imgversus stacks two or more images on top of each other so you can see exactly what changed. Click the image to flip between them, or drag a line across. It works well for game graphics comparisons, before/after edits, photo processing, design revisions, anything where the difference is in the details.
 
-So I made one for myself. Drop your images in, drag the line, share the link. No accounts, no editor, no settings page.
+I built it after imgsli shut down. I used it for years to compare game screenshots on NeoGAF and Reddit (quality vs. performance mode, ray tracing on vs. off), and when it was gone, every alternative I tried was either cluttered or a pain to use. So I made one for myself: drop your images in, share the link. No accounts, no editor, no settings page.
 
 After a while I figured other people might need it too, so here it is. If you're using it for something completely different, or there's something you wish it did, use the feedback button on the site or [open an issue](https://github.com/usamarslan/imgversus/issues). I read all of it.
 
 ## What it does
 
 - Upload 2 to 12 images, get a short link like `imgversus.com/a/Xk3pQ9aB`
-- Slider comparison, with pickers in the top corners when you have more than two images
-- Click-to-switch mode if you'd rather flick between two images in place
+- Click-to-switch (the default): click the image to flip between two images in place
+- Slider mode: drag a line across to reveal one image over the other
+- Image pickers in the top corners when you have more than two images
 - Fullscreen, zoom with the mouse wheel or pinch, pixel-sharp when you zoom in close
 - Images are stored as you uploaded them, no recompression
 - Works on phones
