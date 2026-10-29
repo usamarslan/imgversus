@@ -42,7 +42,9 @@ Toplam link, resim, görüntülenme; son 14 günün dökümü; en çok açılan 
 
 ## Resim depolama: KV ve R2
 
-Resimler şu an KV'de (ücretsiz 1 GB). 4K oyun ekran görüntüleri tanesi 5–15 MB olabildiği için bu alan hızlı dolabilir. Cloudflare R2 10 GB'a kadar ücretsiz, sonrası GB başına ayda yaklaşık 0,015 $; ama R2'yi açmak için hesapta kayıtlı bir ödeme yöntemi gerekiyor.
+**Durum (v1.2.4'ten beri): R2 açık, yeni resimler `imgversus-images` deposuna gidiyor.** Aşağıdaki adımlar sadece projeyi sıfırdan kuran biri için.
+
+İlk sürümlerde resimler KV'deydi (ücretsiz 1 GB). 4K oyun ekran görüntüleri tanesi 5–15 MB olabildiği için bu alan hızlı dolabilir. Cloudflare R2 10 GB'a kadar ücretsiz, sonrası GB başına ayda yaklaşık 0,015 $; ama R2'yi açmak için hesapta kayıtlı bir ödeme yöntemi gerekiyor.
 
 R2'ye geçmek için:
 1. Cloudflare panelinde R2'yi etkinleştir (kart ekli olmalı).

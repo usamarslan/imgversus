@@ -15,9 +15,8 @@ database_name = "imgversus-stats"
 database_id = "cd0b2d09-1c3c-4074-acde-92cecb1478ba"
 migrations_dir = "migrations"
 
-# Resimler için daha geniş depolama (Cloudflare R2, 10 GB ücretsiz). Hesaba kart eklenip R2 açılınca
-# "npx wrangler r2 bucket create imgversus-images" çalıştırıp aşağıdaki satırların başındaki # işaretini kaldır.
-# Bağlıyken yeni resimler R2'ye gider, eski resimler KV'den okunmaya devam eder.
-# [[r2_buckets]]
-# binding = "BUCKET"
-# bucket_name = "imgversus-images"
+# Resim depolama: Cloudflare R2 (10 GB ücretsiz, sonrası GB başına aylık ~0,015 $).
+# Yeni resimler R2'ye gider; R2'den önce yüklenenler KV'den okunmaya devam eder (bkz. lib/storage.js).
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "imgversus-images"

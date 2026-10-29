@@ -40,7 +40,9 @@ export async function onRequestGet({ request, env }) {
     .filter(Boolean)
     .sort((x, y) => y.created.localeCompare(x.created));
 
-  return json({ totals, days, recent, top, countries, feedback, storageLimit: 1024 ** 3 }, 200, {
+  // Ücretsiz depolama: KV 1 GB, R2 10 GB (fazlası GB başına aylık ~0,015 $)
+  const storageLimit = env.BUCKET ? 10 * 1024 ** 3 : 1024 ** 3;
+  return json({ totals, days, recent, top, countries, feedback, storageLimit, storage: env.BUCKET ? 'R2' : 'KV' }, 200, {
     'cache-control': 'no-store',
   });
 }

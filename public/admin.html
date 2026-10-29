@@ -80,7 +80,7 @@
           <div class="kpi"><b>${t.images || 0}</b><span>Yüklenen resim</span></div>
           <div class="kpi"><b>${t.views || 0}</b><span>Link görüntülenme</span></div>
           <div class="kpi"><b>${t.feedback || 0}</b><span>Geri bildirim</span></div>
-          <div class="kpi"><b>${mb(t.bytes)}</b><span>Depolama (ücretsiz 1 GB'ın %${(used * 100).toFixed(1)}'i)</span>
+          <div class="kpi"><b>${mb(t.bytes)}</b><span>Depolama (${d.storage}, ücretsiz ${Math.round(d.storageLimit / 1024 ** 3)} GB'ın %${(used * 100).toFixed(1)}'i)</span>
             <div class="meter"><i class="${used > 0.8 ? 'warn' : ''}" style="width:${Math.min(100, used * 100)}%"></i></div></div>
         </div>
 
