@@ -53,6 +53,23 @@
       <p class="fine" data-i18n="fine"></p>
       <p class="fine retention" data-i18n="retention"></p>
 
+      <!-- Ana sayfadaki örnek karşılaştırma: tıklayınca iki resim arasında geçer -->
+      <section class="demo" aria-labelledby="demo-title">
+        <div class="demo-head">
+          <h2 id="demo-title"><span data-i18n="demoTitle"></span><span class="demo-name">Witcher 3 Remastered · PS5 Pro</span></h2>
+          <a class="demo-open" href="/a/maS8JnRV" data-i18n="demoOpen"></a>
+        </div>
+        <div class="demo-tabs" role="group">
+          <button type="button" class="left active" data-i="0" aria-pressed="true">Performance</button>
+          <button type="button" class="right" data-i="1" aria-pressed="false">Ray Tracing</button>
+        </div>
+        <div class="demo-box" id="demo-box" role="button" tabindex="0" data-i18n-aria="hintToggle">
+          <img src="/sample/performance.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PS5 Pro, Performance mode" draggable="false">
+          <img src="/sample/raytracing.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PS5 Pro, Ray Tracing mode" draggable="false" class="b">
+        </div>
+        <p class="demo-hint" data-i18n="hintToggle"></p>
+      </section>
+
       <section class="about">
         <h2 data-i18n="aboutTitle"></h2>
         <p data-i18n="about1"></p>
@@ -96,6 +113,7 @@
         <button id="m-slide" data-i18n-aria="modeSlide" data-i18n-tip="tipSlide" data-key="M" aria-pressed="false"><span class="ico">⇹</span><span class="lbl" data-i18n="modeSlide"></span></button>
       </div>
       <div class="vactions">
+        <button id="v-native" class="btn icon native" data-i18n-aria="nativeSize" aria-pressed="false">1:1</button>
         <button id="v-full" class="btn icon" hidden>⛶</button>
         <button id="v-back" class="btn" data-i18n="back" hidden></button>
         <button id="v-copy" class="btn primary" hidden><span class="wide" data-i18n="copyLink"></span><span class="narrow" data-i18n="copy"></span></button>

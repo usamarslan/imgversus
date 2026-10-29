@@ -2,6 +2,14 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.7 – 2026-10-29
+
+- New **1:1** button (or `N`): every pixel of the image lands on exactly one pixel of your screen, no scaling at all. It takes Windows/Mac display scaling into account, so it's really 1:1 even at 150% or on a Retina screen. Open a 4K screenshot fullscreen on a 4K monitor and that's exactly what you see.
+- Fullscreen is actually full now. The top bar and the image pickers slide away and come back when you move the mouse to the top.
+- The corner shows the current scale (like 64% or 1:1), so you always know whether you're looking at the real pixels or a scaled-down version.
+- Zooming in past 1:1 goes in whole steps, 200%, 300% and so on, and shows the pixels as they are instead of smoothing them. Below 1:1 the browser's normal smoothing stays.
+- The homepage has a live example now, The Witcher 3 Remastered on PS5 Pro, Performance vs Ray Tracing. Click it to see how it works.
+
 ## 1.2.6 – 2026-10-29
 
 - In click-to-switch mode, the image name used to pop up right in the middle of the picture, on top of the very thing you're trying to look at. It now shows for a moment just above the image instead.

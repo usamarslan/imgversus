@@ -198,12 +198,47 @@ function initUpload() {
   });
   $('#publish').addEventListener('click', publish);
   initFeedback();
+  initDemo();
   $('#v-back').addEventListener('click', () => {
     viewer.close();
     $('#upload').hidden = false;
     setTitle();
   });
   renderList();
+}
+
+/* ======================= Ana sayfa örneği ======================= */
+
+// Örnek karşılaştırma: tıklayınca ya da Space'e basınca resim değişir. Kimse dokunmadıysa ve
+// ekranda görünüyorsa kendi kendine birkaç saniyede bir geçer; ilk etkileşimde durur.
+function initDemo() {
+  const box = $('#demo-box');
+  const tabs = [...document.querySelectorAll('.demo-tabs button')];
+  let shown = 0;
+  let auto = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let visible = false;
+
+  const set = (i) => {
+    shown = i;
+    box.classList.toggle('show-b', i === 1);
+    tabs.forEach((b, j) => {
+      b.classList.toggle('active', j === i);
+      b.setAttribute('aria-pressed', j === i);
+    });
+  };
+  const stopAuto = () => { auto = false; };
+
+  box.addEventListener('click', () => { stopAuto(); set(1 - shown); });
+  box.addEventListener('keydown', (e) => {
+    if (e.key !== ' ' && e.key !== 'Enter') return;
+    e.preventDefault();
+    stopAuto();
+    set(1 - shown);
+  });
+  tabs.forEach((b, j) => b.addEventListener('click', () => { stopAuto(); set(j); }));
+
+  new IntersectionObserver(([entry]) => { visible = entry.isIntersecting; }, { threshold: 0.6 }).observe(box);
+  setInterval(() => { if (auto && visible && !document.hidden) set(1 - shown); }, 2500);
 }
 
 /* ======================= Geri bildirim ======================= */
@@ -277,6 +312,7 @@ const viewer = (() => {
   const flashEl = $('#flash');
   const hintEl = $('#hint');
   const fullBtn = $('#v-full');
+  const nativeBtn = $('#v-native');
   const viewerEl = $('#viewer');
 
   let images = [];
@@ -291,6 +327,8 @@ const viewer = (() => {
   let ready = false;
   let bound = false;
   let zoomTimer;
+  let uiTimer;
+  let stageOff = { x: 0, y: 0 }; // sahnenin sayfadaki konumu (piksel hizalama için)
   const TOP_BAND = 48;         // tıkla-geç modunda resmin üstünde isim için bırakılan boşluk
 
   function open(album, opts = {}) {
@@ -394,7 +432,9 @@ const viewer = (() => {
     if (!text) return;
     flashEl.textContent = text;
     const imgTop = base.y + ty;
-    flashEl.style.top = Math.max(6, imgTop - flashEl.offsetHeight - 6) + 'px';
+    // Tam ekranda üst çubuk açıksa onun altında kalsın
+    const minTop = fullscreenElement() && !viewerEl.classList.contains('fs-idle') ? $('.vbar').offsetHeight + 6 : 6;
+    flashEl.style.top = Math.max(minTop, imgTop - flashEl.offsetHeight - 6) + 'px';
     flashEl.classList.add('show');
     clearTimeout(flashTimer);
     flashTimer = setTimeout(() => flashEl.classList.remove('show'), 700);
@@ -417,27 +457,56 @@ const viewer = (() => {
     const label = t(on ? 'exitFullscreen' : 'fullscreen');
     fullBtn.title = `${label} (${on ? 'F / Esc' : 'F'})`;
     fullBtn.setAttribute('aria-label', label);
+    nativeBtn.title = `${t('nativeSize')} (N)`;
   }
 
   function onFullscreenChange() {
+    const on = !!fullscreenElement();
+    viewerEl.classList.toggle('fs', on);
+    viewerEl.style.setProperty('--vbar-h', $('.vbar').offsetHeight + 'px');
+    if (on) showUi();
+    else viewerEl.classList.remove('fs-idle');
     updateFullTitle();
     layout();
     stage.focus({ preventScroll: true });
   }
 
+  // Tam ekranda üst çubuk ve seçiciler gizlenir; fare en üste gelince ya da dokununca kısa süre görünür
+  function showUi() {
+    viewerEl.classList.remove('fs-idle');
+    clearTimeout(uiTimer);
+    uiTimer = setTimeout(function hide() {
+      if (!fullscreenElement()) return;
+      if (viewerEl.querySelector('.vbar:hover, .picker:hover, .picker select:focus')) uiTimer = setTimeout(hide, 1000);
+      else viewerEl.classList.add('fs-idle');
+    }, 2200);
+  }
+
   function layout() {
     if (!ready) return;
+    const r = stage.getBoundingClientRect();
+    stageOff = { x: r.left, y: r.top };
     const W = stage.clientWidth, H = stage.clientHeight;
     const top = bandTop();
     const s = Math.min(W / ref.w, (H - top) / ref.h);
     const w = ref.w * s, h = ref.h * s;
     base = { x: (W - w) / 2, y: top + (H - top - h) / 2, w, h, s };
-    frame.style.left = base.x + 'px';
-    frame.style.top = base.y + 'px';
-    frame.style.width = w + 'px';
-    frame.style.height = h + 'px';
     clampPan();
     render();
+  }
+
+  // Resmin bir pikseli ekranın kaç fiziksel pikseline denk geliyor (Windows/Mac ekran ölçeği dahil)
+  function deviceScale() {
+    return base.s * z * (window.devicePixelRatio || 1);
+  }
+
+  // 1:1 için gereken yakınlaştırma: resmin her pikseli ekranın tam bir pikseli olur
+  function nativeZ() {
+    return 1 / (base.s * (window.devicePixelRatio || 1));
+  }
+
+  function isNative() {
+    return Math.abs(deviceScale() - 1) < 0.002;
   }
 
   function clampPan() {
@@ -449,26 +518,38 @@ const viewer = (() => {
   }
 
   function bandTop() {
-    return mode === 'toggle' ? TOP_BAND : 0;
+    return mode === 'toggle' && !fullscreenElement() ? TOP_BAND : 0;
   }
 
   function render() {
     const W = stage.clientWidth;
-    frame.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+    // Konumu fiziksel piksele hizala ki 1:1 ve tam sayı büyütmede pikseller kaymasın, bulanıklaşmasın.
+    // Boyutu transform: scale yerine doğrudan veriyoruz; tarayıcı resmi her seferinde hedef boyutta çizer.
+    const dpr = window.devicePixelRatio || 1;
+    const snap = (v, off) => Math.round((off + v) * dpr) / dpr - off;
+    const left = snap(base.x + tx, stageOff.x);
+    frame.style.left = left + 'px';
+    frame.style.top = snap(base.y + ty, stageOff.y) + 'px';
+    frame.style.width = base.w * z + 'px';
+    frame.style.height = base.h * z + 'px';
     if (mode === 'toggle') {
       imgB.style.clipPath = shown === 'b' ? 'none' : 'inset(0 0 0 100%)';
     } else {
       const sx = pos * W;
       divider.style.left = sx + 'px';
-      const left = base.x + tx;
       const c = Math.min(1, Math.max(0, (sx - left) / (base.w * z)));
       imgB.style.clipPath = `inset(0 0 0 ${c * 100}%)`;
     }
     selA.parentNode.classList.toggle('active', mode === 'toggle' && shown === 'a');
     selB.parentNode.classList.toggle('active', mode === 'toggle' && shown === 'b');
-    const eff = base.s * z;
-    frame.classList.toggle('pixelated', eff >= 2);
+    // Ölçeklemesiz (1:1) ya da tam katlarda büyütürken pikselleri olduğu gibi göster (nearest);
+    // küçültürken ve küsuratlı oranlarda tarayıcının yumuşak filtresi kalsın
+    const e = deviceScale();
+    frame.classList.toggle('pixelated', e > 0.999 && Math.abs(e - Math.round(e)) < 0.01);
     stage.classList.toggle('zoomed', z > 1.001);
+    zoomLabel.textContent = !ready ? '' : isNative() ? '1:1' : Math.round(e * 100) + '%';
+    nativeBtn.classList.toggle('on', isNative());
+    nativeBtn.setAttribute('aria-pressed', isNative());
   }
 
   function setPos(clientX) {
@@ -479,7 +560,7 @@ const viewer = (() => {
 
   function zoomAt(px, py, nz) {
     const zmax = Math.max(1, 40 / base.s);
-    nz = Math.min(zmax, Math.max(1, nz));
+    nz = Math.min(zmax, Math.max(Math.min(1, nativeZ()), nz));
     const ux = (px - base.x - tx) / z;
     const uy = (py - base.y - ty) / z;
     z = nz;
@@ -487,10 +568,33 @@ const viewer = (() => {
     ty = py - base.y - z * uy;
     clampPan();
     render();
-    zoomLabel.textContent = Math.round(base.s * z * 100) + '%';
-    zoomLabel.classList.add('show');
+    // Tam ekranda gizliyken ölçek etiketi yakınlaştırınca kısa süre görünür
+    zoomLabel.classList.add('bump');
     clearTimeout(zoomTimer);
-    zoomTimer = setTimeout(() => zoomLabel.classList.remove('show'), 900);
+    zoomTimer = setTimeout(() => zoomLabel.classList.remove('bump'), 1200);
+  }
+
+  // Bir adım yakınlaştır/uzaklaştır. Küçültülmüşken akıcı ilerler ve 1:1'de durur;
+  // 1:1'in üstünde %200, %300… gibi tam katlara atlar ki pikseller eşit boyutta kalsın.
+  function zoomStep(px, py, dir) {
+    const e = deviceScale(), n = nativeZ();
+    let nz;
+    if (dir > 0) nz = e < 0.999 ? Math.min(z * 1.25, n) : n * (Math.floor(e + 0.01) + 1);
+    else nz = e > 1.001 ? n * Math.max(1, Math.ceil(e - 0.01) - 1) : z / 1.25;
+    zoomAt(px, py, nz);
+  }
+
+  // Parmakla yakınlaştırma bitince en yakın tam kata (ya da 1:1'e) otur
+  function snapZoom(px, py) {
+    const e = deviceScale();
+    if (e > 1.001) zoomAt(px, py, nativeZ() * Math.round(e));
+    else if (e > 0.97) zoomAt(px, py, nativeZ());
+  }
+
+  function toggleNative() {
+    const cx = stage.clientWidth / 2, cy = stage.clientHeight / 2;
+    if (isNative()) zoomAt(cx, cy, 1);
+    else zoomAt(cx, cy, nativeZ());
   }
 
   function resetZoom() {
@@ -508,6 +612,10 @@ const viewer = (() => {
     $('#m-toggle').addEventListener('click', () => setMode('toggle'));
     fullBtn.hidden = !(document.fullscreenEnabled || document.webkitFullscreenEnabled);
     fullBtn.addEventListener('click', toggleFullscreen);
+    nativeBtn.addEventListener('click', toggleNative);
+    viewerEl.addEventListener('pointermove', (e) => {
+      if (fullscreenElement() && e.pointerType === 'mouse' && e.clientY < 90) showUi();
+    });
     updateFullTitle();
     onLangChange(updateFullTitle);
     document.addEventListener('fullscreenchange', onFullscreenChange);
@@ -519,6 +627,7 @@ const viewer = (() => {
     let last = null;
     let pinch = null;
     let down = null; // tıkla-geç: tıklama mı sürükleme mi ayırt etmek için
+    let wheelAcc = 0, wheelTimer;
 
     const local = (e) => {
       const r = stage.getBoundingClientRect();
@@ -529,6 +638,7 @@ const viewer = (() => {
       if (e.target.closest('.picker') || !ready) return;
       if (e.button !== 0 && e.pointerType === 'mouse') return;
       hideHint();
+      if (fullscreenElement() && e.pointerType === 'touch') showUi();
       stage.setPointerCapture(e.pointerId);
       pointers.set(e.pointerId, local(e));
       if (pointers.size === 2) {
@@ -585,6 +695,7 @@ const viewer = (() => {
         down = null;
         stage.classList.remove('panning');
       } else if (drag === 'pinch' && pointers.size === 1) {
+        snapZoom(pinch.mx, pinch.my);
         // Bir parmak kalınca kaydırmaya devam et
         drag = 'pan';
         last = [...pointers.values()][0];
@@ -598,14 +709,28 @@ const viewer = (() => {
       e.preventDefault();
       const p = local(e);
       const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
-      zoomAt(p.x, p.y, z * Math.exp(-dy * 0.0015));
+      if (deviceScale() < 0.999) {
+        // Küçültülmüşken akıcı yakınlaştır, 1:1'i geçme
+        zoomAt(p.x, p.y, Math.min(z * Math.exp(-dy * 0.0015), nativeZ()));
+        wheelAcc = 0;
+      } else {
+        // 1:1 ve üstünde tam katlar: bir tekerlek çentiği = bir adım (dokunmatik yüzeyde biriktir)
+        wheelAcc += dy;
+        clearTimeout(wheelTimer);
+        wheelTimer = setTimeout(() => { wheelAcc = 0; }, 250);
+        if (Math.abs(wheelAcc) >= 80) {
+          zoomStep(p.x, p.y, wheelAcc < 0 ? 1 : -1);
+          wheelAcc = 0;
+        }
+      }
     }, { passive: false });
 
     stage.addEventListener('dblclick', (e) => {
       if (e.target.closest('.picker') || mode === 'toggle') return;
       const p = local(e);
       if (z > 1.001) resetZoom();
-      else zoomAt(p.x, p.y, Math.max(2, 1 / base.s)); // ilk çift tıklamada %100'e (ya da 2x'e) yakınlaştır
+      else if (deviceScale() < 0.999) zoomAt(p.x, p.y, nativeZ()); // ilk çift tıklamada 1:1'e
+      else zoomStep(p.x, p.y, 1);
     });
 
     window.addEventListener('keydown', (e) => {
@@ -619,8 +744,9 @@ const viewer = (() => {
       else if ((e.key === 'f' || e.key === 'F') && !fullBtn.hidden) toggleFullscreen();
       else if (e.key === ' ' && mode === 'toggle') flip();
       else if (e.key === '0') resetZoom();
-      else if (e.key === '+' || e.key === '=') zoomAt(stage.clientWidth / 2, stage.clientHeight / 2, z * 1.25);
-      else if (e.key === '-') zoomAt(stage.clientWidth / 2, stage.clientHeight / 2, z / 1.25);
+      else if (e.key === 'n' || e.key === 'N') toggleNative();
+      else if (e.key === '+' || e.key === '=') zoomStep(stage.clientWidth / 2, stage.clientHeight / 2, 1);
+      else if (e.key === '-') zoomStep(stage.clientWidth / 2, stage.clientHeight / 2, -1);
       else if (/^Digit[1-9]$/.test(e.code)) {
         // 1-9: sağ resmi seç, Shift+1-9: sol resmi seç
         const i = +e.code.slice(5) - 1;

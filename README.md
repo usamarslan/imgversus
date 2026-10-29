@@ -18,7 +18,10 @@ After a while I figured other people might need it too, so here it is. If you're
 - Click-to-switch (the default): click the image to flip between two images in place
 - Slider mode: drag a line across to reveal one image over the other
 - Image pickers in the top corners when you have more than two images
-- Fullscreen, zoom with the mouse wheel or pinch, pixel-sharp when you zoom in close
+- True 1:1 view: one image pixel on one screen pixel, no scaling, with your display scaling (125%, 150%, Retina) taken into account
+- Fullscreen that's actually full: the bar and pickers get out of the way until you move the mouse to the top
+- The current scale is always shown in the corner, so you know whether you're looking at a scaled image
+- Zoom with the mouse wheel or pinch. Above 1:1 it steps in whole multiples (200%, 300%…) and shows pixels as they are, no smoothing
 - Images are stored as you uploaded them, no recompression
 - Works on phones
 - 18 languages, picked from your browser automatically
@@ -34,7 +37,9 @@ After a while I figured other people might need it too, so here it is. If you're
 | `M` | Switch between slider and click-to-switch |
 | `Space` | Flip images in click-to-switch mode |
 | `F` | Fullscreen |
-| `0` | Reset zoom |
+| `N` | Actual size (1:1) |
+| `+` `-` | Zoom in / out |
+| `0` | Fit to screen |
 
 ## Do links expire?
 
