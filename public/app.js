@@ -6,6 +6,7 @@ const MAX_FILES = 12;
 const MAX_SIZE = 20 * 1024 * 1024;
 const MAX_TOTAL = 90 * 1024 * 1024;
 const TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/gif', 'image/bmp'];
+const FEEDBACK_EMAIL = 'feedback@imgversus.com';
 
 let toastTimer;
 function toast(text) {
@@ -221,6 +222,17 @@ function initFeedback() {
     $('#fb-message').focus();
   });
   $('#fb-cancel').addEventListener('click', () => dialog.close());
+
+  // "Ya da şu adrese yaz" satırı: çeviri metninin içine tıklanabilir e-posta linki yerleştir
+  const renderAlt = () => {
+    const link = document.createElement('a');
+    link.href = `mailto:${FEEDBACK_EMAIL}`;
+    link.textContent = FEEDBACK_EMAIL;
+    const [before, after = ''] = t('fbOrEmail', { email: '\u0000' }).split('\u0000');
+    $('#fb-alt').replaceChildren(before, link, after);
+  };
+  renderAlt();
+  onLangChange(renderAlt);
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();

@@ -2,7 +2,7 @@
 
 A simple image comparison slider. Drop in two or more images, drag the line to see the difference, and share the link.
 
-**→ [imgversus.pages.dev](https://imgversus.pages.dev)**
+**→ [imgversus.com](https://imgversus.com)**
 
 ## Why I made this
 
@@ -14,7 +14,7 @@ After a while I figured other people might need it too, so here it is. If you're
 
 ## What it does
 
-- Upload 2 to 12 images, get a short link like `imgversus.pages.dev/a/Xk3pQ9aB`
+- Upload 2 to 12 images, get a short link like `imgversus.com/a/Xk3pQ9aB`
 - Slider comparison, with pickers in the top corners when you have more than two images
 - Click-to-switch mode if you'd rather flick between two images in place
 - Fullscreen, zoom with the mouse wheel or pinch, pixel-sharp when you zoom in close

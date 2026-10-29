@@ -129,7 +129,7 @@ Kişisel kullanım ve arkadaş çevresi için fazlasıyla yeterli. Büyürse:
 
 ## Kendi alan adın (isteğe bağlı)
 
-`.pages.dev` adresi ücretsizdir. `imgversus.com` gibi bir alan adı istersen yıllık ~10$ ödeyip Cloudflare Pages → Custom domains'ten bağlayabilirsin.
+Site `imgversus.com` adresinde yayında (Cloudflare Registrar, yıllık ~10,5 $, otomatik yenileme açık olmalı). `imgversus.pages.dev` ve `www.imgversus.com` adresleri `functions/_middleware.js` ile kalıcı olarak `imgversus.com`a yönlendirilir. Not: Türkiye’de bazı internet sağlayıcıları `*.pages.dev` adreslerini engelliyor; kendi alan adı bundan etkilenmez.
 
 ## Herkese açık yaparken dikkat
 

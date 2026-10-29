@@ -2,6 +2,11 @@
 
 Every update to imgversus gets a version number and a short note here. Bug fixes bump the last number (1.0.1), new features bump the middle one (1.1.0).
 
+## 1.2.0 – 2026-10-29
+
+- imgversus has its own address now: [imgversus.com](https://imgversus.com). Old imgversus.pages.dev links redirect on their own, so nothing you've already shared breaks.
+- You can also reach me by email at feedback@imgversus.com. The feedback form still works too.
+
 ## 1.1.0 – 2026-10-29
 
 - Comparisons don't expire. Your link stays up for as long as the site is running, and the homepage says so now.

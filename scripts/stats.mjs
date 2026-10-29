@@ -47,7 +47,7 @@ const top = query(`
   GROUP BY album ORDER BY views DESC LIMIT 10`);
 if (top.length) {
   console.log('\nEn çok görüntülenen linkler (son 30 gün)');
-  for (const t of top) console.log(`  ${String(t.views).padStart(6)}  https://imgversus.pages.dev/a/${t.album}`);
+  for (const t of top) console.log(`  ${String(t.views).padStart(6)}  https://imgversus.com/a/${t.album}`);
 }
 
 const countries = query(`
