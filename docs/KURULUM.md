@@ -148,7 +148,7 @@ Adımlar:
 1. `CHANGELOG.md`'nin en üstüne yeni sürümün başlığını ve maddelerini yaz, kaydet ve commit'le.
 2. Sürümü artır (package.json'u günceller, commit ve `v1.1.0` gibi bir etiket oluşturur):
    ```bash
-   npm version minor
+   npm version patch
    ```
 3. GitHub'a gönder:
    ```bash
