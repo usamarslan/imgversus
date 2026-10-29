@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Changelog – imgversus</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23181b22'/%3E%3Cpath d='M5 6h11v20H5z' fill='%235b8cff'/%3E%3Cpath d='M16 6h11v20H16z' fill='%23ff8a5b'/%3E%3Cpath d='M15 3h2v26h-2z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><span class="logo"></span>imgversus</a>
+  </header>
+  <main class="wrap changelog" id="changelog"></main>
+
+  <script>
+    // CHANGELOG.md için küçük bir markdown çevirici: başlıklar, listeler, linkler ve `kod`
+    const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+    const inline = (s) => esc(s)
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+    function render(md) {
+      let html = '';
+      let inList = false;
+      for (const line of md.split('\n')) {
+        const item = line.match(/^[-*] (.*)/);
+        if (inList && !item) { html += '</ul>'; inList = false; }
+        if (item) {
+          if (!inList) { html += '<ul>'; inList = true; }
+          html += `<li>${inline(item[1])}</li>`;
+        } else if (line.startsWith('## ')) html += `<h2>${inline(line.slice(3))}</h2>`;
+        else if (line.startsWith('# ')) html += `<h1>${inline(line.slice(2))}</h1>`;
+        else if (line.trim()) html += `<p>${inline(line)}</p>`;
+      }
+      return html + (inList ? '</ul>' : '');
+    }
+
+    fetch('/changelog.md')
+      .then((r) => (r.ok ? r.text() : Promise.reject()))
+      .then((md) => { document.getElementById('changelog').innerHTML = render(md); })
+      .catch(() => { document.getElementById('changelog').textContent = 'Changelog could not be loaded.'; });
+  </script>
+</body>
+</html>

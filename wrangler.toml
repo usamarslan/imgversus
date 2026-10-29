@@ -1,0 +1,9 @@
+name = "imgversus"
+compatibility_date = "2025-06-01"
+pages_build_output_dir = "public"
+
+# Resimler ve albüm bilgileri Cloudflare KV'de tutulur.
+# "npx wrangler kv namespace create IMAGES" komutunun verdiği id'yi buraya yaz.
+[[kv_namespaces]]
+binding = "IMAGES"
+id = "BURAYA_KV_ID"

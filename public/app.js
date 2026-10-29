@@ -1,0 +1,634 @@
+'use strict';
+
+const $ = (sel) => document.querySelector(sel);
+
+const MAX_FILES = 12;
+const MAX_SIZE = 20 * 1024 * 1024;
+const MAX_TOTAL = 90 * 1024 * 1024;
+const TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/avif', 'image/gif', 'image/bmp'];
+
+let toastTimer;
+function toast(text) {
+  const el = $('#toast');
+  el.textContent = text;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast(t('copied'));
+  } catch {
+    window.prompt(t('copyPrompt'), text);
+  }
+}
+
+// Sunucu hata kodlarını mesaja çevir
+const SERVER_ERRORS = { type: 'errType', size: 'errSize', max: 'errMax', min: 'errMin', bad: 'errBad' };
+
+/* ======================= Yükleme sayfası ======================= */
+
+const items = []; // { file, name, url }
+
+function addFiles(fileList) {
+  const msg = $('#msg');
+  msg.textContent = '';
+  msg.className = 'msg';
+  for (const file of fileList) {
+    if (!TYPES.includes(file.type)) { msg.textContent = t('errType', { name: file.name }); continue; }
+    if (file.size > MAX_SIZE) { msg.textContent = t('errSize', { name: file.name }); continue; }
+    if (items.length >= MAX_FILES) { msg.textContent = t('errMax', { n: MAX_FILES }); break; }
+    const base = (file.name || '').replace(/\.[^.]+$/, '');
+    const name = base && base !== 'image' ? base : t('imageN', { n: items.length + 1 });
+    items.push({ file, name: name.slice(0, 80), url: URL.createObjectURL(file) });
+  }
+  renderList();
+}
+
+function renderList() {
+  const list = $('#list');
+  list.replaceChildren();
+  items.forEach((item, i) => {
+    const li = document.createElement('li');
+    li.className = 'item';
+
+    const thumb = document.createElement('div');
+    thumb.className = 'thumb';
+    thumb.style.backgroundImage = `url("${item.url}")`;
+    const num = document.createElement('span');
+    num.className = 'num';
+    num.textContent = i + 1;
+    thumb.append(num);
+
+    const name = document.createElement('input');
+    name.className = 'name';
+    name.value = item.name;
+    name.maxLength = 80;
+    name.setAttribute('aria-label', t('imageNameAria', { n: i + 1 }));
+    name.addEventListener('input', () => { item.name = name.value; });
+
+    const meta = document.createElement('div');
+    meta.className = 'meta';
+    meta.textContent = formatSize(item.file.size);
+
+    const tools = document.createElement('div');
+    tools.className = 'tools';
+    const mk = (label, title, fn, disabled, cls) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.title = title;
+      b.disabled = disabled;
+      if (cls) b.className = cls;
+      b.addEventListener('click', fn);
+      tools.append(b);
+    };
+    // Sağdan sola dillerde liste ters aktığı için okları da çevir
+    const rtl = document.documentElement.dir === 'rtl';
+    mk(rtl ? '▶' : '◀', t(rtl ? 'moveRight' : 'moveLeft'), () => move(i, -1), i === 0);
+    mk(rtl ? '◀' : '▶', t(rtl ? 'moveLeft' : 'moveRight'), () => move(i, 1), i === items.length - 1);
+    mk('✕', t('remove'), () => {
+      URL.revokeObjectURL(item.url);
+      items.splice(i, 1);
+      renderList();
+    }, false, 'del');
+
+    li.append(thumb, name, meta, tools);
+    list.append(li);
+  });
+
+  const enough = items.length >= 2;
+  $('#preview').disabled = !enough;
+  $('#publish').disabled = !enough;
+}
+
+function move(i, dir) {
+  const j = i + dir;
+  [items[i], items[j]] = [items[j], items[i]];
+  renderList();
+}
+
+function currentImages() {
+  return items.map((it, i) => ({ src: it.url, name: it.name.trim() || t('imageN', { n: i + 1 }) }));
+}
+
+function publish() {
+  const total = items.reduce((s, it) => s + it.file.size, 0);
+  const msg = $('#msg');
+  if (total > MAX_TOTAL) {
+    msg.textContent = t('errTotal');
+    return;
+  }
+  const form = new FormData();
+  form.append('title', $('#title').value.trim());
+  items.forEach((it, i) => {
+    form.append('files', it.file, it.file.name || `image-${i}`);
+    form.append('names', it.name.trim() || t('imageN', { n: i + 1 }));
+  });
+
+  const progress = $('#progress');
+  const bar = progress.querySelector('i');
+  const pct = progress.querySelector('span');
+  progress.hidden = false;
+  bar.style.width = '0';
+  pct.textContent = '0%';
+  msg.textContent = '';
+  $('#publish').disabled = $('#preview').disabled = true;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', '/api/upload');
+  xhr.upload.onprogress = (e) => {
+    if (!e.lengthComputable) return;
+    const p = Math.round((e.loaded / e.total) * 100);
+    bar.style.width = p + '%';
+    pct.textContent = p + '%';
+  };
+  xhr.onload = () => {
+    let data = {};
+    try { data = JSON.parse(xhr.responseText); } catch {}
+    if (xhr.status === 200 && data.id) {
+      location.assign(`/a/${data.id}?new=1`);
+      return;
+    }
+    const key = SERVER_ERRORS[data.error];
+    fail(key ? t(key, data) : t('errUpload', { status: xhr.status }));
+  };
+  xhr.onerror = () => fail(t('errNetwork'));
+  xhr.send(form);
+
+  function fail(text) {
+    progress.hidden = true;
+    msg.textContent = text;
+    renderList();
+  }
+}
+
+function initUpload() {
+  const setTitle = () => { if (!$('#upload').hidden) document.title = `imgversus – ${t('appTitle')}`; };
+  $('#upload').hidden = false;
+  $('#viewer').hidden = true;
+  setTitle();
+  onLangChange(() => { setTitle(); renderList(); });
+
+  const drop = $('#drop');
+  const input = $('#file');
+  input.addEventListener('change', () => { addFiles(input.files); input.value = ''; });
+  ['dragenter', 'dragover'].forEach((type) => drop.addEventListener(type, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave', 'drop'].forEach((type) => drop.addEventListener(type, () => drop.classList.remove('over')));
+  drop.addEventListener('drop', (e) => { e.preventDefault(); addFiles(e.dataTransfer.files); });
+  // Sayfanın herhangi bir yerine bırakılan dosyalar da eklensin
+  window.addEventListener('dragover', (e) => e.preventDefault());
+  window.addEventListener('drop', (e) => { e.preventDefault(); if (!drop.contains(e.target)) addFiles(e.dataTransfer.files); });
+  window.addEventListener('paste', (e) => {
+    if ($('#upload').hidden) return;
+    const files = [...(e.clipboardData?.files || [])];
+    if (files.length) { e.preventDefault(); addFiles(files); }
+  });
+
+  $('#preview').addEventListener('click', () => {
+    viewer.open({ title: $('#title').value.trim(), images: currentImages() }, { local: true });
+  });
+  $('#publish').addEventListener('click', publish);
+  initFeedback();
+  $('#v-back').addEventListener('click', () => {
+    viewer.close();
+    $('#upload').hidden = false;
+    setTitle();
+  });
+  renderList();
+}
+
+/* ======================= Geri bildirim ======================= */
+
+function initFeedback() {
+  const dialog = $('#fb');
+  const form = $('#fb-form');
+  const msg = $('#fb-msg');
+  const send = $('#fb-send');
+
+  $('#fb-open').addEventListener('click', () => {
+    msg.textContent = '';
+    msg.className = 'msg';
+    send.disabled = false;
+    dialog.showModal();
+    $('#fb-message').focus();
+  });
+  $('#fb-cancel').addEventListener('click', () => dialog.close());
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    send.disabled = true;
+    msg.textContent = '';
+    msg.className = 'msg';
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          message: $('#fb-message').value,
+          email: $('#fb-email').value,
+          website: $('#fb-website').value,
+          lang,
+        }),
+      });
+      if (!res.ok) throw new Error('http');
+      msg.textContent = t('fbThanks');
+      msg.className = 'msg ok';
+      form.reset();
+      setTimeout(() => dialog.close(), 1600);
+    } catch {
+      msg.textContent = t('fbError');
+      send.disabled = false;
+    }
+  });
+}
+
+/* ======================= Karşılaştırma ekranı ======================= */
+
+const viewer = (() => {
+  const stage = $('#stage');
+  const frame = $('#frame');
+  const imgA = $('#img-a');
+  const imgB = $('#img-b');
+  const divider = $('#divider');
+  const selA = $('#sel-a');
+  const selB = $('#sel-b');
+  const zoomLabel = $('#zoom-label');
+  const status = $('#v-status');
+  const flashEl = $('#flash');
+  const fullBtn = $('#v-full');
+  const viewerEl = $('#viewer');
+
+  let images = [];
+  let a = 0, b = 1;
+  let mode = 'slide';          // 'slide' = kaydırıcı, 'toggle' = tıkla-geç
+  let shown = 'a';             // tıkla-geç modunda görünen taraf
+  let flashTimer;
+  let pos = 0.5;               // kaydırıcı konumu (sahne genişliğinin oranı)
+  let ref = { w: 1, h: 1 };    // referans boyut: ilk resim
+  let base = { x: 0, y: 0, w: 1, h: 1, s: 1 };
+  let z = 1, tx = 0, ty = 0;   // yakınlaştırma ve kaydırma
+  let ready = false;
+  let bound = false;
+  let zoomTimer;
+
+  function open(album, opts = {}) {
+    images = album.images;
+    a = 0; b = 1; pos = 0.5; z = 1; tx = 0; ty = 0; ready = false; shown = 'a';
+
+    $('#upload').hidden = true;
+    $('#viewer').hidden = false;
+    $('#v-title').textContent = album.title || '';
+    document.title = (album.title ? album.title + ' – ' : '') + 'imgversus';
+    $('#v-back').hidden = !opts.local;
+    $('#v-copy').hidden = !!opts.local;
+
+    fillSelect(selA);
+    fillSelect(selB);
+    status.textContent = t('loading');
+
+    const first = new Image();
+    first.onload = () => {
+      ref = { w: first.naturalWidth, h: first.naturalHeight };
+      status.textContent = '';
+      ready = true;
+      show();
+    };
+    first.onerror = () => { status.textContent = t('imgFail'); };
+    first.src = images[0].src;
+    // Diğer resimleri arka planda önceden yükle
+    images.slice(1).forEach((im) => { new Image().src = im.src; });
+
+    if (!bound) bind();
+    stage.focus({ preventScroll: true });
+  }
+
+  function close() {
+    if (fullscreenElement()) toggleFullscreen();
+    $('#viewer').hidden = true;
+    imgA.removeAttribute('src');
+    imgB.removeAttribute('src');
+  }
+
+  function fillSelect(sel) {
+    sel.replaceChildren(...images.map((im, i) => new Option(`${i + 1}. ${im.name}`, i)));
+    sel.disabled = images.length < 2;
+  }
+
+  function show() {
+    selA.value = a;
+    selB.value = b;
+    imgA.src = images[a].src;
+    imgB.src = images[b].src;
+    imgA.alt = images[a].name;
+    imgB.alt = images[b].name;
+    layout();
+  }
+
+  function pick(side, i) {
+    i = +i;
+    if (side === 'a') { if (i === b) b = a; a = i; }
+    else { if (i === a) a = b; b = i; }
+    show();
+  }
+
+  function swap() { [a, b] = [b, a]; show(); }
+
+  function setMode(m) {
+    mode = m;
+    $('#m-slide').classList.toggle('active', m === 'slide');
+    $('#m-toggle').classList.toggle('active', m === 'toggle');
+    $('#m-slide').setAttribute('aria-pressed', m === 'slide');
+    $('#m-toggle').setAttribute('aria-pressed', m === 'toggle');
+    stage.classList.toggle('toggle', m === 'toggle');
+    if (m === 'toggle') flash(images[shown === 'a' ? a : b]?.name);
+    render();
+  }
+
+  // Tıkla-geç modunda görünen resmi değiştir
+  function flip() {
+    shown = shown === 'a' ? 'b' : 'a';
+    render();
+    flash(images[shown === 'a' ? a : b].name);
+  }
+
+  function flash(text) {
+    if (!text) return;
+    flashEl.textContent = text;
+    flashEl.classList.add('show');
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => flashEl.classList.remove('show'), 700);
+  }
+
+  function fullscreenElement() {
+    return document.fullscreenElement || document.webkitFullscreenElement;
+  }
+
+  function toggleFullscreen() {
+    if (fullscreenElement()) (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    else {
+      const req = (viewerEl.requestFullscreen || viewerEl.webkitRequestFullscreen).call(viewerEl);
+      req?.catch?.(() => toast(t('fsDenied')));
+    }
+  }
+
+  function updateFullTitle() {
+    const on = !!fullscreenElement();
+    const label = t(on ? 'exitFullscreen' : 'fullscreen');
+    fullBtn.title = `${label} (${on ? 'F / Esc' : 'F'})`;
+    fullBtn.setAttribute('aria-label', label);
+  }
+
+  function onFullscreenChange() {
+    updateFullTitle();
+    layout();
+    stage.focus({ preventScroll: true });
+  }
+
+  function layout() {
+    if (!ready) return;
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const s = Math.min(W / ref.w, H / ref.h);
+    const w = ref.w * s, h = ref.h * s;
+    base = { x: (W - w) / 2, y: (H - h) / 2, w, h, s };
+    frame.style.left = base.x + 'px';
+    frame.style.top = base.y + 'px';
+    frame.style.width = w + 'px';
+    frame.style.height = h + 'px';
+    clampPan();
+    render();
+  }
+
+  function clampPan() {
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const fw = base.w * z, fh = base.h * z;
+    tx = fw <= W ? W / 2 - base.x - fw / 2 : Math.min(-base.x, Math.max(W - base.x - fw, tx));
+    ty = fh <= H ? H / 2 - base.y - fh / 2 : Math.min(-base.y, Math.max(H - base.y - fh, ty));
+  }
+
+  function render() {
+    const W = stage.clientWidth;
+    frame.style.transform = `translate(${tx}px, ${ty}px) scale(${z})`;
+    if (mode === 'toggle') {
+      imgB.style.clipPath = shown === 'b' ? 'none' : 'inset(0 0 0 100%)';
+    } else {
+      const sx = pos * W;
+      divider.style.left = sx + 'px';
+      const left = base.x + tx;
+      const c = Math.min(1, Math.max(0, (sx - left) / (base.w * z)));
+      imgB.style.clipPath = `inset(0 0 0 ${c * 100}%)`;
+    }
+    selA.parentNode.classList.toggle('active', mode === 'toggle' && shown === 'a');
+    selB.parentNode.classList.toggle('active', mode === 'toggle' && shown === 'b');
+    const eff = base.s * z;
+    frame.classList.toggle('pixelated', eff >= 2);
+    stage.classList.toggle('zoomed', z > 1.001);
+  }
+
+  function setPos(clientX) {
+    const r = stage.getBoundingClientRect();
+    pos = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
+    render();
+  }
+
+  function zoomAt(px, py, nz) {
+    const zmax = Math.max(1, 40 / base.s);
+    nz = Math.min(zmax, Math.max(1, nz));
+    const ux = (px - base.x - tx) / z;
+    const uy = (py - base.y - ty) / z;
+    z = nz;
+    tx = px - base.x - z * ux;
+    ty = py - base.y - z * uy;
+    clampPan();
+    render();
+    zoomLabel.textContent = Math.round(base.s * z * 100) + '%';
+    zoomLabel.classList.add('show');
+    clearTimeout(zoomTimer);
+    zoomTimer = setTimeout(() => zoomLabel.classList.remove('show'), 900);
+  }
+
+  function resetZoom() {
+    const r = stage.getBoundingClientRect();
+    zoomAt(r.width / 2, r.height / 2, 1);
+  }
+
+  function bind() {
+    bound = true;
+    selA.addEventListener('change', () => pick('a', selA.value));
+    selB.addEventListener('change', () => pick('b', selB.value));
+    $('#v-swap').addEventListener('click', swap);
+    $('#v-reset').addEventListener('click', resetZoom);
+    $('#v-copy').addEventListener('click', () => copyText(location.origin + location.pathname));
+    window.addEventListener('resize', layout);
+    $('#m-slide').addEventListener('click', () => setMode('slide'));
+    $('#m-toggle').addEventListener('click', () => setMode('toggle'));
+    fullBtn.hidden = !(document.fullscreenEnabled || document.webkitFullscreenEnabled);
+    fullBtn.addEventListener('click', toggleFullscreen);
+    updateFullTitle();
+    onLangChange(updateFullTitle);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+
+    const pointers = new Map();
+    let drag = null; // 'slide' | 'pan' | 'pinch' | 'tap'
+    let last = null;
+    let pinch = null;
+    let down = null; // tıkla-geç: tıklama mı sürükleme mi ayırt etmek için
+
+    const local = (e) => {
+      const r = stage.getBoundingClientRect();
+      return { x: e.clientX - r.left, y: e.clientY - r.top };
+    };
+
+    stage.addEventListener('pointerdown', (e) => {
+      if (e.target.closest('.picker') || !ready) return;
+      if (e.button !== 0 && e.pointerType === 'mouse') return;
+      stage.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, local(e));
+      if (pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        drag = 'pinch';
+        down = null;
+        pinch = { d: Math.hypot(p1.x - p2.x, p1.y - p2.y), mx: (p1.x + p2.x) / 2, my: (p1.y + p2.y) / 2 };
+        return;
+      }
+      if (pointers.size > 2) return;
+      const p = pointers.get(e.pointerId);
+      down = { x: p.x, y: p.y, moved: false };
+      const nearLine = Math.abs(p.x - pos * stage.clientWidth) < (e.pointerType === 'mouse' ? 18 : 32);
+      if (mode === 'toggle' && z <= 1.001) {
+        drag = 'tap';
+      } else if (mode === 'slide' && (z <= 1.001 || nearLine)) {
+        drag = 'slide';
+        setPos(e.clientX);
+      } else {
+        drag = 'pan';
+        last = p;
+        stage.classList.add('panning');
+      }
+    });
+
+    stage.addEventListener('pointermove', (e) => {
+      if (!pointers.has(e.pointerId)) return;
+      const p = local(e);
+      pointers.set(e.pointerId, p);
+      if (down && Math.hypot(p.x - down.x, p.y - down.y) > 6) down.moved = true;
+      if (drag === 'slide') setPos(e.clientX);
+      else if (drag === 'pan') {
+        tx += p.x - last.x;
+        ty += p.y - last.y;
+        last = p;
+        clampPan();
+        render();
+      } else if (drag === 'pinch' && pointers.size === 2) {
+        const [p1, p2] = [...pointers.values()];
+        const d = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+        const mx = (p1.x + p2.x) / 2, my = (p1.y + p2.y) / 2;
+        tx += mx - pinch.mx;
+        ty += my - pinch.my;
+        zoomAt(mx, my, z * (d / pinch.d));
+        pinch = { d, mx, my };
+      }
+    });
+
+    const end = (e) => {
+      if (!pointers.delete(e.pointerId)) return;
+      if (pointers.size === 0) {
+        if (e.type === 'pointerup' && mode === 'toggle' && down && !down.moved) flip();
+        drag = null;
+        down = null;
+        stage.classList.remove('panning');
+      } else if (drag === 'pinch' && pointers.size === 1) {
+        // Bir parmak kalınca kaydırmaya devam et
+        drag = 'pan';
+        last = [...pointers.values()][0];
+      }
+    };
+    stage.addEventListener('pointerup', end);
+    stage.addEventListener('pointercancel', end);
+
+    stage.addEventListener('wheel', (e) => {
+      if (!ready) return;
+      e.preventDefault();
+      const p = local(e);
+      const dy = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      zoomAt(p.x, p.y, z * Math.exp(-dy * 0.0015));
+    }, { passive: false });
+
+    stage.addEventListener('dblclick', (e) => {
+      if (e.target.closest('.picker') || mode === 'toggle') return;
+      const p = local(e);
+      if (z > 1.001) resetZoom();
+      else zoomAt(p.x, p.y, Math.max(2, 1 / base.s)); // ilk çift tıklamada %100'e (ya da 2x'e) yakınlaştır
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if ($('#viewer').hidden || e.target.matches('input, select, textarea')) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const step = e.shiftKey ? 0.1 : 0.02;
+      if (e.key === 'ArrowLeft') { pos = Math.max(0, pos - step); render(); }
+      else if (e.key === 'ArrowRight') { pos = Math.min(1, pos + step); render(); }
+      else if (e.key === 's' || e.key === 'S') swap();
+      else if (e.key === 'm' || e.key === 'M') setMode(mode === 'slide' ? 'toggle' : 'slide');
+      else if ((e.key === 'f' || e.key === 'F') && !fullBtn.hidden) toggleFullscreen();
+      else if (e.key === ' ' && mode === 'toggle') flip();
+      else if (e.key === '0') resetZoom();
+      else if (e.key === '+' || e.key === '=') zoomAt(stage.clientWidth / 2, stage.clientHeight / 2, z * 1.25);
+      else if (e.key === '-') zoomAt(stage.clientWidth / 2, stage.clientHeight / 2, z / 1.25);
+      else if (/^Digit[1-9]$/.test(e.code)) {
+        // 1-9: sağ resmi seç, Shift+1-9: sol resmi seç
+        const i = +e.code.slice(5) - 1;
+        if (i < images.length) pick(e.shiftKey ? 'a' : 'b', i);
+      } else return;
+      e.preventDefault();
+    });
+  }
+
+  return { open, close };
+})();
+
+/* ======================= Paylaşılan albüm ======================= */
+
+async function initAlbum(id) {
+  $('#upload').hidden = true;
+  $('#viewer').hidden = false;
+  const status = $('#v-status');
+  status.textContent = t('loading');
+  try {
+    const res = await fetch(`/api/album/${id}`);
+    if (res.status === 404) throw new Error('notfound');
+    if (!res.ok) throw new Error('http');
+    const album = await res.json();
+    viewer.open({
+      title: album.title,
+      images: album.images.map((im, i) => ({ src: `/i/${id}/${i}`, name: im.name })),
+    });
+    if (new URLSearchParams(location.search).has('new')) {
+      history.replaceState(null, '', `/a/${id}`);
+      toast(t('linkReady'));
+    }
+  } catch (err) {
+    const showError = () => {
+      if (err.message !== 'notfound') { status.textContent = t('loadError'); return; }
+      const link = document.createElement('a');
+      link.href = '/';
+      link.textContent = t('createNew');
+      status.replaceChildren(t('notFound'), document.createElement('br'), link);
+    };
+    showError();
+    onLangChange(showError);
+  }
+}
+
+initLangSelects();
+if (typeof APP_VERSION !== 'undefined') $('#version').textContent = `v${APP_VERSION}`;
+const match = location.pathname.match(/^\/a\/([A-Za-z0-9]{4,32})\/?$/);
+if (match) initAlbum(match[1]);
+else initUpload();

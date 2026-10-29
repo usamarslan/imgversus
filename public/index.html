@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>imgversus – Image comparison</title>
+  <meta name="description" content="imgversus is a free image comparison slider and imgsli alternative. Compare two or more images side by side and share them with a link.">
+  <meta property="og:title" content="imgversus – Image comparison">
+  <meta property="og:description" content="Compare two or more images with a slider and share them with a link.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23181b22'/%3E%3Cpath d='M5 6h11v20H5z' fill='%235b8cff'/%3E%3Cpath d='M16 6h11v20H16z' fill='%23ff8a5b'/%3E%3Cpath d='M15 3h2v26h-2z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Yükleme sayfası -->
+  <section id="upload" hidden>
+    <header class="top">
+      <a class="brand" href="/"><span class="logo"></span>imgversus</a>
+      <div class="top-right">
+        <select class="lang" data-i18n-aria="language" aria-label="Language"></select>
+        <a class="gh" href="https://github.com/usamarslan/imgversus" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub">
+          <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      </div>
+    </header>
+    <main class="wrap">
+      <h1 data-i18n="h1">Compare images with a slider</h1>
+      <p class="lead" data-i18n="lead"></p>
+
+      <label id="drop" class="drop">
+        <input type="file" id="file" multiple accept="image/png,image/jpeg,image/webp,image/avif,image/gif,image/bmp">
+        <strong data-i18n="dropMain"></strong>
+        <span data-i18n="dropSub"></span>
+      </label>
+
+      <input id="title" class="field" data-i18n-ph="titlePh" maxlength="120">
+
+      <ol id="list" class="list"></ol>
+
+      <div class="actions">
+        <button id="preview" class="btn" data-i18n="preview" disabled></button>
+        <button id="publish" class="btn primary" data-i18n="publish" disabled></button>
+      </div>
+      <div id="progress" class="progress" hidden><div class="bar"><i></i></div><span></span></div>
+      <p id="msg" class="msg" role="status"></p>
+
+      <p class="fine" data-i18n="fine"></p>
+
+      <section class="about">
+        <h2 data-i18n="aboutTitle"></h2>
+        <p data-i18n="about1"></p>
+        <p data-i18n="about2"></p>
+      </section>
+    </main>
+    <footer class="foot">
+      <a href="https://github.com/usamarslan/imgversus" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/sponsors/usamarslan" target="_blank" rel="noopener"><span class="heart">♥</span> <span data-i18n="sponsor"></span></a>
+      <button type="button" id="fb-open" class="linkbtn" data-i18n="feedback"></button>
+      <a href="https://github.com/usamarslan/imgversus/issues/new" target="_blank" rel="noopener" data-i18n="reportIssue"></a>
+      <a href="/changelog" id="version" title="Changelog">v1.0.0</a>
+    </footer>
+  </section>
+
+  <!-- Geri bildirim penceresi -->
+  <dialog id="fb" class="dialog">
+    <form id="fb-form" method="dialog">
+      <h2 data-i18n="fbTitle"></h2>
+      <p class="muted" data-i18n="fbIntro"></p>
+      <textarea id="fb-message" class="field" rows="6" maxlength="4000" required data-i18n-ph="fbMessage"></textarea>
+      <input id="fb-email" class="field" type="email" maxlength="200" autocomplete="email" data-i18n-ph="fbEmail">
+      <!-- Botlar için tuzak alan; insanlar görmez -->
+      <input id="fb-website" class="hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <p id="fb-msg" class="msg" role="status"></p>
+      <div class="actions">
+        <button type="button" id="fb-cancel" class="btn" data-i18n="fbCancel"></button>
+        <button type="submit" id="fb-send" class="btn primary" data-i18n="fbSend"></button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Karşılaştırma ekranı -->
+  <section id="viewer" hidden>
+    <header class="vbar">
+      <a class="brand" href="/"><span class="logo"></span><span class="brand-text">imgversus</span></a>
+      <h1 id="v-title"></h1>
+      <div class="seg" role="group" data-i18n-aria="modeGroup">
+        <button id="m-slide" class="active" data-i18n-title="modeSlide" data-key="M" aria-pressed="true"><span class="ico">⇹</span><span class="lbl" data-i18n="modeSlide"></span></button>
+        <button id="m-toggle" data-i18n-title="modeToggle" data-key="M" aria-pressed="false"><span class="ico">⇆</span><span class="lbl" data-i18n="modeToggle"></span></button>
+      </div>
+      <div class="vactions">
+        <button id="v-full" class="btn icon" hidden>⛶</button>
+        <button id="v-swap" class="btn icon" data-i18n-title="swap" data-key="S">⇄</button>
+        <button id="v-reset" class="btn icon" data-i18n-title="resetZoom" data-key="0">⤢</button>
+        <button id="v-back" class="btn" data-i18n="back" hidden></button>
+        <button id="v-copy" class="btn primary" hidden><span class="wide" data-i18n="copyLink"></span><span class="narrow" data-i18n="copy"></span></button>
+      </div>
+    </header>
+    <div id="stage" tabindex="0">
+      <div id="frame">
+        <img id="img-a" alt="" draggable="false">
+        <img id="img-b" alt="" draggable="false">
+      </div>
+      <div id="divider"><div class="handle"><span>‹</span><span>›</span></div></div>
+      <div class="picker left"><select id="sel-a" data-i18n-aria="leftImage"></select></div>
+      <div class="picker right"><select id="sel-b" data-i18n-aria="rightImage"></select></div>
+      <div id="flash" class="flash"></div>
+      <div id="zoom-label" class="zoom-label"></div>
+      <div id="v-status" class="v-status"></div>
+    </div>
+  </section>
+
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="/meta.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>

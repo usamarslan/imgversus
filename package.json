@@ -1,0 +1,16 @@
+{
+  "name": "imgversus",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Simple image comparison slider with shareable links. An imgsli alternative.",
+  "scripts": {
+    "predev": "node scripts/build-meta.mjs",
+    "dev": "wrangler pages dev",
+    "predeploy": "node scripts/build-meta.mjs",
+    "deploy": "wrangler pages deploy",
+    "feedback": "node scripts/feedback.mjs"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}

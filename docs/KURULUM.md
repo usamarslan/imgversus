@@ -1,0 +1,133 @@
+# imgversus – Türkçe kurulum ve bakım rehberi
+
+Bu dosya projeyi kendin yayınlamak ve güncellemek için. Ziyaretçilere yönelik tanıtım İngilizce olarak ana README.md dosyasında.
+
+## Özellikler
+
+- Sürükle-bırak, dosya seçme veya Ctrl+V ile resim ekleme; isim verme, sıralama, kaldırma
+- Yüklemeden önce **Önizle** (resimler hiçbir yere gitmez)
+- Kaydırıcı: sürükle / tıkla, ←/→ (Shift ile büyük adım)
+- Alternatif **Tıkla-geç** modu: resme her tıklamada (veya `Space`) iki resim arasında geçiş. Modlar arasında `M` ile geçilir; varsayılan kaydırıcı
+- Tam ekran: ⛶ butonu veya `F` (iPhone Safari tam ekranı desteklemediği için orada buton gizlenir)
+- Sol üst ve sağ üst köşede resim seçici (2'den fazla resim varsa aralarında geçiş)
+- Klavye: `1`–`9` sağ resmi, `Shift`+`1`–`9` sol resmi seçer, `S` yer değiştirir
+- Fare tekerleği / iki parmakla yakınlaştırma, yakınken sürükleyerek kaydırma, çift tık = yakınlaştır/sıfırla, `0` sıfırla
+- Yüksek yakınlaştırmada piksel piksel (bulanıklaştırmadan) gösterim
+- Resimler yeniden sıkıştırılmaz, orijinal haliyle saklanır
+- Mobil uyumlu
+- 18 dil: English, Türkçe, Deutsch, Français, Español, Italiano, Português, Nederlands, Polski, Русский, Українська, العربية (sağdan sola), हिन्दी, Bahasa Indonesia, Tiếng Việt, 日本語, 한국어, 中文. Tarayıcının/sistemin dili otomatik seçilir, desteklenmiyorsa İngilizce açılır. Ana sayfadaki menüden seçilen dil tarayıcıda hatırlanır.
+- Ana sayfa alt bilgisinde GitHub, GitHub Sponsors, geri bildirim formu ve "Hata bildir" (GitHub Issues) linkleri
+
+## Geri bildirimleri okuma
+
+Sitedeki form mesajları Cloudflare KV'ye kaydeder (anahtar: `feedback:<tarih>:<id>`). Hepsini terminalde görmek için:
+
+```bash
+npm run feedback
+```
+
+Ya da Cloudflare panelinde: Storage & Databases → KV → IMAGES → `feedback:` ile başlayan anahtarlar.
+
+## Bağış (GitHub Sponsors)
+
+"Destek ol" linki `https://github.com/sponsors/usamarslan` adresine gider. Linkin çalışması için https://github.com/sponsors adresinden GitHub Sponsors'a başvurup profilini onaylatman gerekiyor.
+
+## Yapı
+
+```
+public/           Statik site (index.html, app.js, style.css)
+  i18n.js             Çeviriler ve dil algılama (yeni dil eklemek için LANGS + STRINGS)
+functions/        Cloudflare Pages Functions (sunucu tarafı)
+  api/upload.js       POST /api/upload  → resimleri KV'ye kaydeder, id döner
+  api/feedback.js     POST /api/feedback → geri bildirimi KV'ye kaydeder
+  api/album/[id].js   GET  /api/album/:id → başlık + resim isimleri
+  i/[id]/[n].js       GET  /i/:id/:n     → resmin kendisi
+  a/[id].js           GET  /a/:id        → paylaşım sayfası
+lib/shared.js     Ortak sabitler ve yardımcılar
+scripts/feedback.mjs  Geri bildirimleri listeler (npm run feedback)
+wrangler.toml     Cloudflare ayarları (KV bağlantısı)
+```
+
+## Ücretsiz yayınlama (Cloudflare Pages + KV)
+
+Kredi kartı gerekmez. Adres `https://<proje-adı>.pages.dev` olur.
+
+1. **Cloudflare hesabı aç** (ücretsiz): https://dash.cloudflare.com/sign-up
+2. **Node.js kur** (LTS sürümü): https://nodejs.org
+3. Bu klasörde terminal aç ve bağımlılıkları kur:
+   ```bash
+   npm install
+   ```
+4. Cloudflare'a giriş yap (tarayıcı açılır):
+   ```bash
+   npx wrangler login
+   ```
+5. Resimlerin saklanacağı KV alanını oluştur:
+   ```bash
+   npx wrangler kv namespace create IMAGES
+   ```
+   Çıktıdaki `id = "..."` değerini `wrangler.toml` içindeki `BURAYA_KV_ID` yerine yapıştır.
+6. Yayınla:
+   ```bash
+   npm run deploy
+   ```
+   İlk seferde proje adı sorar (ör. `imgversus`). Bitince sana `https://imgversus.pages.dev` gibi bir adres verir.
+
+Sonraki güncellemeler için sadece `npm run deploy` yeterli.
+
+### Yerelde çalıştırma
+
+```bash
+npm run dev
+```
+http://localhost:8788 adresinde açılır. Yerelde KV taklit edilir, Cloudflare hesabı gerekmez.
+
+## Ücretsiz katman sınırları (yaklaşık)
+
+| Kaynak | Ücretsiz sınır | Bu sitede ne demek |
+|---|---|---|
+| KV depolama | 1 GB | Toplam yüklenen resim boyutu |
+| KV yazma | 1.000 / gün | Her karşılaştırma = resim sayısı + 1 yazma (≈ günde 250–300 karşılaştırma) |
+| KV okuma | 100.000 / gün | Her resim görüntüleme 1 okuma (tarayıcı önbelleğe alır) |
+| Functions istekleri | 100.000 / gün | API + resim istekleri |
+| Statik dosyalar | Sınırsız | index.html, css, js |
+
+Kişisel kullanım ve arkadaş çevresi için fazlasıyla yeterli. Büyürse:
+- Resimleri **Cloudflare R2**'ye taşımak (10 GB ücretsiz, ama hesaba kart eklemek gerekir)
+- Sınırı aşınca Workers Paid planı: aylık 5$
+
+## Kendi alan adın (isteğe bağlı)
+
+`.pages.dev` adresi ücretsizdir. `imgversus.com` gibi bir alan adı istersen yıllık ~10$ ödeyip Cloudflare Pages → Custom domains'ten bağlayabilirsin.
+
+## Herkese açık yaparken dikkat
+
+- Herkes resim yükleyebilir. Kötüye kullanımı (spam, yasa dışı içerik) önlemek için ileride ücretsiz **Cloudflare Turnstile** (CAPTCHA) eklenebilir.
+- Şu an silme / süre sonu yok; resimler kalıcı. İstenirse yükleyene özel silme linki ya da X gün sonra otomatik silme (KV `expirationTtl`) eklenebilir.
+
+## Yeni sürüm yayınlama
+
+Her güncellemede sürüm numarası artar ve CHANGELOG.md'ye not düşülür. Sürüm numarası sitenin alt kısmında görünür, tıklayınca değişiklik listesi açılır.
+
+- Hata düzeltmesi: son rakam artar (1.0.0 → 1.0.1) → `npm version patch`
+- Yeni özellik: ortadaki rakam artar (1.0.1 → 1.1.0) → `npm version minor`
+
+Adımlar:
+
+1. `CHANGELOG.md`'nin en üstüne yeni sürümün başlığını ve maddelerini yaz, kaydet ve commit'le.
+2. Sürümü artır (package.json'u günceller, commit ve `v1.1.0` gibi bir etiket oluşturur):
+   ```bash
+   npm version minor
+   ```
+3. GitHub'a gönder:
+   ```bash
+   git push --follow-tags
+   ```
+4. Siteyi güncelle:
+   ```bash
+   npm run deploy
+   ```
+5. GitHub'da sürüm sayfası (Releases) oluştur:
+   ```bash
+   gh release create v1.1.0 --title "v1.1.0" --notes "CHANGELOG'daki maddeler"
+   ```
