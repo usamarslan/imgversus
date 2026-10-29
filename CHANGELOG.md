@@ -2,6 +2,12 @@
 
 Every update to imgversus gets a version number and a short note here. Bug fixes bump the last number (1.0.1), new features bump the middle one (1.1.0).
 
+## 1.1.0 – 2026-10-29
+
+- Comparisons don't expire. Your link stays up for as long as the site is running, and the homepage says so now.
+- I added simple usage counts on my side: how many comparisons get made and how often they're opened. No cookies, no third-party trackers, nothing tied to you.
+- Under the hood, storage can now move to Cloudflare R2, which means room for a lot more images. Existing links keep working either way.
+
 ## 1.0.0 – 2026-10-29
 
 First public release.

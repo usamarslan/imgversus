@@ -1,7 +1,9 @@
-import { MAX_FILES, MAX_SIZE, TYPES, json, newId } from '../../lib/shared.js';
+import { MAX_FILES, MAX_SIZE, TYPES, json, newId, track } from '../../lib/shared.js';
+import { putImage } from '../../lib/storage.js';
 
 // Hatalar dil bağımsız kodlarla döner; mesajı tarayıcı kullanıcının dilinde gösterir.
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   let form;
   try {
     form = await request.formData();
@@ -31,10 +33,11 @@ export async function onRequestPost({ request, env }) {
 
   await Promise.all(
     files.map(async (f, i) =>
-      env.IMAGES.put(`img:${id}:${i}`, await f.arrayBuffer(), { metadata: { type: f.type } })
+      putImage(env, `img:${id}:${i}`, await f.arrayBuffer(), f.type)
     )
   );
   await env.IMAGES.put(`album:${id}`, JSON.stringify({ title, images, created: Date.now() }));
+  track(context, 'upload', { album: id, images: files.length, bytes: files.reduce((s, f) => s + f.size, 0) });
 
   return json({ id });
 }

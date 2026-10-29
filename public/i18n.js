@@ -81,6 +81,7 @@ const STRINGS = {
     fbCancel: 'Cancel',
     fbThanks: 'Thanks! Your message has been sent.',
     fbError: 'Could not send. Please try again.',
+    retention: 'Comparisons don’t expire. Your link keeps working for as long as the site is up.',
     // Kişisel not: sadece İngilizce ve Türkçe var, diğer diller İngilizcesini gösterir
     aboutTitle: 'Why I made this',
     about1: 'I used imgsli for years, mostly for comparing game screenshots on NeoGAF and Reddit. Quality mode vs. performance mode, ray tracing on vs. off, that kind of thing. When it shut down I tried pretty much every alternative I could find, and most of them were either cluttered or a pain to use. So I made one for myself: drop your images in, drag the line, share the link. That’s it.',
@@ -142,6 +143,7 @@ const STRINGS = {
     fbCancel: 'Vazgeç',
     fbThanks: 'Teşekkürler! Mesajın gönderildi.',
     fbError: 'Gönderilemedi, tekrar dene.',
+    retention: 'Karşılaştırmaların süresi dolmaz. Site açık olduğu sürece linkin çalışmaya devam eder.',
     aboutTitle: 'Bunu neden yaptım?',
     about1: 'Yıllarca imgsli kullandım, çoğunlukla NeoGAF ve Reddit’te oyun ekran görüntülerini karşılaştırmak için. Kalite modu mu performans modu mu, ray tracing açılınca ne değişiyor, öyle şeyler. imgsli kapanınca bulabildiğim neredeyse bütün alternatifleri denedim ama çoğu ya çok karışıktı ya da kullanması zahmetliydi. Ben de kendime bir tane yaptım: resimleri at, çizgiyi kaydır, linki paylaş. O kadar.',
     about2: 'Bir süre sonra başkalarının da işine yarar diye herkese açtım. Bambaşka bir iş için kullanıyorsan ya da “keşke şu da olsa” dediğin bir şey varsa aşağıdaki geri bildirim butonundan yaz, hepsini okuyorum.',
@@ -202,6 +204,7 @@ const STRINGS = {
     fbCancel: 'Abbrechen',
     fbThanks: 'Danke! Deine Nachricht wurde gesendet.',
     fbError: 'Senden fehlgeschlagen. Bitte versuche es erneut.',
+    retention: 'Vergleiche laufen nicht ab. Dein Link funktioniert, solange es die Seite gibt.',
   },
   fr: {
     appTitle: 'Comparaison d’images',
@@ -259,6 +262,7 @@ const STRINGS = {
     fbCancel: 'Annuler',
     fbThanks: 'Merci ! Votre message a été envoyé.',
     fbError: 'Échec de l’envoi. Veuillez réessayer.',
+    retention: 'Les comparaisons n’expirent pas. Votre lien reste valide tant que le site existe.',
   },
   es: {
     appTitle: 'Comparación de imágenes',
@@ -316,6 +320,7 @@ const STRINGS = {
     fbCancel: 'Cancelar',
     fbThanks: '¡Gracias! Tu mensaje se ha enviado.',
     fbError: 'No se pudo enviar. Inténtalo de nuevo.',
+    retention: 'Las comparaciones no caducan. Tu enlace seguirá funcionando mientras el sitio exista.',
   },
   it: {
     appTitle: 'Confronto immagini',
@@ -373,6 +378,7 @@ const STRINGS = {
     fbCancel: 'Annulla',
     fbThanks: 'Grazie! Il tuo messaggio è stato inviato.',
     fbError: 'Invio non riuscito. Riprova.',
+    retention: 'I confronti non scadono. Il tuo link funziona finché il sito è online.',
   },
   pt: {
     appTitle: 'Comparação de imagens',
@@ -430,6 +436,7 @@ const STRINGS = {
     fbCancel: 'Cancelar',
     fbThanks: 'Obrigado! Sua mensagem foi enviada.',
     fbError: 'Não foi possível enviar. Tente novamente.',
+    retention: 'As comparações não expiram. Seu link continua funcionando enquanto o site estiver no ar.',
   },
   nl: {
     appTitle: 'Afbeeldingen vergelijken',
@@ -487,6 +494,7 @@ const STRINGS = {
     fbCancel: 'Annuleren',
     fbThanks: 'Bedankt! Je bericht is verstuurd.',
     fbError: 'Versturen mislukt. Probeer het opnieuw.',
+    retention: 'Vergelijkingen verlopen niet. Je link blijft werken zolang de site bestaat.',
   },
   pl: {
     appTitle: 'Porównywanie obrazów',
@@ -544,6 +552,7 @@ const STRINGS = {
     fbCancel: 'Anuluj',
     fbThanks: 'Dziękujemy! Wiadomość została wysłana.',
     fbError: 'Nie udało się wysłać. Spróbuj ponownie.',
+    retention: 'Porównania nie wygasają. Twój link działa tak długo, jak działa strona.',
   },
   ru: {
     appTitle: 'Сравнение изображений',
@@ -601,6 +610,7 @@ const STRINGS = {
     fbCancel: 'Отмена',
     fbThanks: 'Спасибо! Сообщение отправлено.',
     fbError: 'Не удалось отправить. Попробуйте ещё раз.',
+    retention: 'У сравнений нет срока действия. Ссылка работает, пока работает сайт.',
   },
   uk: {
     appTitle: 'Порівняння зображень',
@@ -658,6 +668,7 @@ const STRINGS = {
     fbCancel: 'Скасувати',
     fbThanks: 'Дякуємо! Повідомлення надіслано.',
     fbError: 'Не вдалося надіслати. Спробуйте ще раз.',
+    retention: 'Порівняння не мають терміну дії. Посилання працює, доки працює сайт.',
   },
   ar: {
     appTitle: 'مقارنة الصور',
@@ -715,6 +726,7 @@ const STRINGS = {
     fbCancel: 'إلغاء',
     fbThanks: 'شكرًا! تم إرسال رسالتك.',
     fbError: 'تعذّر الإرسال. حاول مرة أخرى.',
+    retention: 'لا تنتهي صلاحية المقارنات. يظل رابطك يعمل طالما أن الموقع متاح.',
   },
   hi: {
     appTitle: 'इमेज तुलना',
@@ -772,6 +784,7 @@ const STRINGS = {
     fbCancel: 'रद्द करें',
     fbThanks: 'धन्यवाद! आपका संदेश भेज दिया गया।',
     fbError: 'भेजा नहीं जा सका। फिर से कोशिश करें।',
+    retention: 'तुलनाएँ कभी एक्सपायर नहीं होतीं। जब तक साइट चल रही है, आपका लिंक काम करता रहेगा।',
   },
   id: {
     appTitle: 'Perbandingan gambar',
@@ -829,6 +842,7 @@ const STRINGS = {
     fbCancel: 'Batal',
     fbThanks: 'Terima kasih! Pesanmu sudah terkirim.',
     fbError: 'Gagal mengirim. Coba lagi.',
+    retention: 'Perbandingan tidak kedaluwarsa. Tautanmu tetap berfungsi selama situs ini masih ada.',
   },
   vi: {
     appTitle: 'So sánh hình ảnh',
@@ -886,6 +900,7 @@ const STRINGS = {
     fbCancel: 'Hủy',
     fbThanks: 'Cảm ơn! Tin nhắn của bạn đã được gửi.',
     fbError: 'Không gửi được. Vui lòng thử lại.',
+    retention: 'Bản so sánh không hết hạn. Liên kết của bạn vẫn hoạt động miễn là trang web còn hoạt động.',
   },
   ja: {
     appTitle: '画像比較',
@@ -943,6 +958,7 @@ const STRINGS = {
     fbCancel: 'キャンセル',
     fbThanks: 'ありがとうございます！メッセージを送信しました。',
     fbError: '送信できませんでした。もう一度お試しください。',
+    retention: '比較に有効期限はありません。サイトが続く限り、リンクは使えます。',
   },
   ko: {
     appTitle: '이미지 비교',
@@ -1000,6 +1016,7 @@ const STRINGS = {
     fbCancel: '취소',
     fbThanks: '감사합니다! 메시지를 보냈습니다.',
     fbError: '보내지 못했습니다. 다시 시도하세요.',
+    retention: '비교에는 만료 기한이 없습니다. 사이트가 운영되는 동안 링크는 계속 작동합니다.',
   },
   zh: {
     appTitle: '图片对比',
@@ -1057,6 +1074,7 @@ const STRINGS = {
     fbCancel: '取消',
     fbThanks: '谢谢！你的留言已发送。',
     fbError: '发送失败，请重试。',
+    retention: '对比不会过期。只要网站还在，你的链接就一直有效。',
   },
 };
 

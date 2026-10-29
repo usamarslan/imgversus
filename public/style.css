@@ -267,3 +267,4 @@ a { color: inherit; }
 .changelog li { margin: 4px 0; }
 .changelog code { background: var(--panel-2); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
 .changelog a { color: var(--accent); }
+.fine.retention { margin-top: 6px; }

@@ -35,6 +35,14 @@ After a while I figured other people might need it too, so here it is. If you're
 | `F` | Fullscreen |
 | `0` | Reset zoom |
 
+## Do links expire?
+
+No. A comparison stays up for as long as the site is running.
+
+## Privacy
+
+The site counts uploads and link views, along with the visitor's country as Cloudflare reports it, so I can tell whether anyone's actually using it. There are no cookies, no tracking scripts and nothing personal. The code is open, so you can check exactly what gets recorded in [`lib/shared.js`](lib/shared.js). The numbers themselves stay private in my Cloudflare account.
+
 ## Running it yourself
 
 It's a static page plus a few Cloudflare Pages Functions, with images stored in Cloudflare KV. Everything fits in Cloudflare's free tier.

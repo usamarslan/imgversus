@@ -28,6 +28,28 @@ npm run feedback
 
 Ya da Cloudflare panelinde: Storage & Databases → KV → IMAGES → `feedback:` ile başlayan anahtarlar.
 
+## Kullanım istatistikleri
+
+Her yeni link, her link açılışı ve her geri bildirim Cloudflare D1 veritabanına (`imgversus-stats`) bir satır olarak yazılır. Kişisel veri tutulmaz, sadece zaman, link kimliği, resim sayısı/boyutu ve ülke kodu. Özet görmek için:
+
+```bash
+npm run stats
+```
+
+Toplam link, resim, görüntülenme; son 14 günün dökümü; en çok açılan linkler ve ülkeler listelenir. Kod açık kaynak olsa da veriler senin Cloudflare hesabında durur, başkası göremez.
+
+**Sayfa görüntülenmeleri** (kaç kişi siteye girdi, nereden geldi) için Cloudflare Web Analytics'i aç: Cloudflare paneli → Workers & Pages → imgversus → **Metrics** → Web Analytics → **Enable**. Ücretsiz, çerez kullanmaz.
+
+## Resim depolama: KV ve R2
+
+Resimler şu an KV'de (ücretsiz 1 GB). 4K oyun ekran görüntüleri tanesi 5–15 MB olabildiği için bu alan hızlı dolabilir. Cloudflare R2 10 GB'a kadar ücretsiz, sonrası GB başına ayda yaklaşık 0,015 $; ama R2'yi açmak için hesapta kayıtlı bir ödeme yöntemi gerekiyor.
+
+R2'ye geçmek için:
+1. Cloudflare panelinde R2'yi etkinleştir (kart ekli olmalı).
+2. `npx wrangler r2 bucket create imgversus-images`
+3. `wrangler.toml` içindeki `[[r2_buckets]]` satırlarının başındaki `#` işaretlerini kaldır.
+4. Yeni sürüm olarak yayınla. Yeni resimler R2'ye gider, eski linkler KV'den okunmaya devam eder.
+
 ## Bağış (GitHub Sponsors)
 
 "Destek ol" linki `https://github.com/sponsors/usamarslan` adresine gider. Linkin çalışması için https://github.com/sponsors adresinden GitHub Sponsors'a başvurup profilini onaylatman gerekiyor.
@@ -43,9 +65,12 @@ functions/        Cloudflare Pages Functions (sunucu tarafı)
   api/album/[id].js   GET  /api/album/:id → başlık + resim isimleri
   i/[id]/[n].js       GET  /i/:id/:n     → resmin kendisi
   a/[id].js           GET  /a/:id        → paylaşım sayfası
-lib/shared.js     Ortak sabitler ve yardımcılar
+lib/shared.js     Ortak sabitler, yardımcılar ve istatistik kaydı
+lib/storage.js    Resim okuma/yazma (R2 varsa R2, yoksa KV)
+migrations/       İstatistik veritabanı tabloları (D1)
 scripts/feedback.mjs  Geri bildirimleri listeler (npm run feedback)
-wrangler.toml     Cloudflare ayarları (KV bağlantısı)
+scripts/stats.mjs     Kullanım istatistiklerini gösterir (npm run stats)
+wrangler.toml     Cloudflare ayarları (KV, D1, R2 bağlantıları)
 ```
 
 ## Ücretsiz yayınlama (Cloudflare Pages + KV)
@@ -66,8 +91,14 @@ Kredi kartı gerekmez. Adres `https://<proje-adı>.pages.dev` olur.
    ```bash
    npx wrangler kv namespace create IMAGES
    ```
-   Çıktıdaki `id = "..."` değerini `wrangler.toml` içindeki `BURAYA_KV_ID` yerine yapıştır.
-6. Yayınla:
+   Çıktıdaki `id = "..."` değerini `wrangler.toml` içindeki KV `id` satırına yapıştır.
+6. İstatistik veritabanını oluştur ve tablolarını kur:
+   ```bash
+   npx wrangler d1 create imgversus-stats
+   npx wrangler d1 migrations apply imgversus-stats --remote
+   ```
+   İlk komutun verdiği `database_id` değerini `wrangler.toml`'a yaz.
+7. Yayınla:
    ```bash
    npm run deploy
    ```

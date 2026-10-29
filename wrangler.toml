@@ -7,3 +7,17 @@ pages_build_output_dir = "public"
 [[kv_namespaces]]
 binding = "IMAGES"
 id = "4b63fc1cf5694dc3ad7d064f5fdebb13"
+
+# Kullanım istatistikleri (yükleme, görüntüleme, geri bildirim). "npm run stats" ile okunur.
+[[d1_databases]]
+binding = "STATS"
+database_name = "imgversus-stats"
+database_id = "cd0b2d09-1c3c-4074-acde-92cecb1478ba"
+migrations_dir = "migrations"
+
+# Resimler için daha geniş depolama (Cloudflare R2, 10 GB ücretsiz). Hesaba kart eklenip R2 açılınca
+# "npx wrangler r2 bucket create imgversus-images" çalıştırıp aşağıdaki satırların başındaki # işaretini kaldır.
+# Bağlıyken yeni resimler R2'ye gider, eski resimler KV'den okunmaya devam eder.
+# [[r2_buckets]]
+# binding = "BUCKET"
+# bucket_name = "imgversus-images"

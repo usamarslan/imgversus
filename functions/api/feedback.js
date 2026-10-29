@@ -1,7 +1,8 @@
-import { json, newId } from '../../lib/shared.js';
+import { json, newId, track } from '../../lib/shared.js';
 
 // Geri bildirimler KV'de "feedback:<tarih>:<id>" anahtarıyla saklanır; "npm run feedback" ile okunur.
-export async function onRequestPost({ request, env }) {
+export async function onRequestPost(context) {
+  const { request, env } = context;
   let body;
   try {
     body = await request.json();
@@ -23,5 +24,6 @@ export async function onRequestPost({ request, env }) {
     created: new Date().toISOString(),
   };
   await env.IMAGES.put(`feedback:${entry.created}:${newId(6)}`, JSON.stringify(entry));
+  track(context, 'feedback');
   return json({ ok: true });
 }
