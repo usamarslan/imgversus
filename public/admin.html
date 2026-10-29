@@ -28,6 +28,8 @@
     .fb .meta { color: var(--muted); font-size: 13px; margin-bottom: 4px; }
     .fb p { margin: 0; white-space: pre-wrap; }
     .login { max-width: 360px; margin: 60px auto; }
+    .btn.del { padding: 5px 10px; font-size: 13px; }
+    .btn.del:hover:not(:disabled) { border-color: var(--danger); color: var(--danger); }
     .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
     .muted { color: var(--muted); }
     a { color: var(--accent); }
@@ -92,13 +94,14 @@
 
         <h2>Son yüklenenler</h2>
         <div class="scroll"><table>
-          <tr><th></th><th>Başlık / link</th><th>Tarih</th><th class="num">Resim</th><th class="num">Boyut</th><th class="num">Görüntülenme</th><th>Ülke</th></tr>
+          <tr><th></th><th>Başlık / link</th><th>Tarih</th><th class="num">Resim</th><th class="num">Boyut</th><th class="num">Görüntülenme</th><th>Ülke</th><th></th></tr>
           ${d.recent.map((r, i) => `<tr>
             <td>${r.exists && i < 20 ? `<img class="thumb" loading="lazy" src="/i/${r.album}/0" alt="">` : ''}</td>
             <td>${r.exists ? `<a href="/a/${r.album}" target="_blank" rel="noopener">${esc(r.title) || r.album}</a>` : `<span class="muted">${r.album} (silinmiş)</span>`}</td>
             <td>${date(r.ts)}</td><td class="num">${r.images}</td><td class="num">${mb(r.bytes)}</td>
-            <td class="num">${r.views}</td><td>${esc(r.country)}</td></tr>`).join('')
-            || '<tr><td colspan="7" class="muted">Henüz yükleme yok.</td></tr>'}
+            <td class="num">${r.views}</td><td>${esc(r.country)}</td>
+            <td>${r.exists ? `<button class="btn del" data-album="${r.album}" data-title="${esc(r.title) || r.album}">Sil</button>` : ''}</td></tr>`).join('')
+            || '<tr><td colspan="8" class="muted">Henüz yükleme yok.</td></tr>'}
         </table></div>
 
         <h2>Ülkeler (görüntülenme, son 30 gün)</h2>
@@ -109,6 +112,27 @@
           || '<p class="muted">Henüz geri bildirim yok.</p>'}
         <p class="muted" style="margin-top:32px">Sayfa ziyaretleri (kaç kişi girdi, nereden geldi) için Cloudflare → Compute → Workers &amp; Pages → imgversus → Metrics → Web Analytics.</p>`;
       $('#refresh').onclick = () => start(store.get());
+      document.querySelectorAll('button.del').forEach((btn) => {
+        btn.onclick = () => remove(btn.dataset.album, btn.dataset.title, btn);
+      });
+    }
+
+    // Karşılaştırmayı ve resimlerini kalıcı olarak siler
+    async function remove(album, title, btn) {
+      if (!confirm(`"${title}" ve resimleri kalıcı olarak silinsin mi?\n\nLink artık açılmaz. Bu işlem geri alınamaz.`)) return;
+      btn.disabled = true;
+      btn.textContent = 'Siliniyor…';
+      const res = await fetch(`/api/admin?album=${encodeURIComponent(album)}`, {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${store.get()}` },
+      });
+      if (!res.ok) {
+        alert('Silinemedi, tekrar dene.');
+        btn.disabled = false;
+        btn.textContent = 'Sil';
+        return;
+      }
+      start(store.get());
     }
 
     async function start(key) {

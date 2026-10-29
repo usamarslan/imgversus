@@ -1,9 +1,9 @@
-import { json } from '../../lib/shared.js';
+import { ID_RE, json, track } from '../../lib/shared.js';
+import { deleteImage } from '../../lib/storage.js';
 
 // Yönetici özeti (/admin sayfası için). Sadece doğru ADMIN_KEY ile açılır; anahtar Cloudflare'da gizli değişken olarak durur.
 export async function onRequestGet({ request, env }) {
-  const key = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!env.ADMIN_KEY || !(await sameSecret(key, env.ADMIN_KEY))) return json({ error: 'unauthorized' }, 401);
+  if (!(await authorized(request, env))) return json({ error: 'unauthorized' }, 401);
 
   const DAY = 24 * 60 * 60 * 1000;
   const now = Date.now();
@@ -12,7 +12,8 @@ export async function onRequestGet({ request, env }) {
   const [[totals], days, recent, top, countries] = await Promise.all([
     all(`SELECT SUM(type = 'upload') AS albums,
                 SUM(CASE WHEN type = 'upload' THEN images ELSE 0 END) AS images,
-                SUM(CASE WHEN type = 'upload' THEN bytes ELSE 0 END) AS bytes,
+                SUM(CASE WHEN type = 'upload' THEN bytes WHEN type = 'delete' THEN -bytes ELSE 0 END) AS bytes,
+                SUM(type = 'delete') AS deleted,
                 SUM(type = 'view') AS views,
                 SUM(type = 'feedback') AS feedback
          FROM events`),
@@ -42,6 +43,27 @@ export async function onRequestGet({ request, env }) {
   return json({ totals, days, recent, top, countries, feedback, storageLimit: 1024 ** 3 }, 200, {
     'cache-control': 'no-store',
   });
+}
+
+// Bir karşılaştırmayı ve resimlerini kalıcı olarak siler: DELETE /api/admin?album=<id>
+// İstatistik satırları kalır, yönetici sayfasında "silinmiş" olarak görünür.
+export async function onRequestDelete(context) {
+  const { request, env } = context;
+  if (!(await authorized(request, env))) return json({ error: 'unauthorized' }, 401);
+  const id = new URL(request.url).searchParams.get('album') || '';
+  if (!ID_RE.test(id)) return json({ error: 'bad' }, 400);
+
+  const album = await env.IMAGES.get(`album:${id}`, 'json');
+  if (!album) return json({ error: 'notfound' }, 404);
+  await Promise.all(album.images.map((_, i) => deleteImage(env, `img:${id}:${i}`)));
+  await env.IMAGES.delete(`album:${id}`);
+  track(context, 'delete', { album: id, images: album.images.length, bytes: album.images.reduce((s, im) => s + (im.size || 0), 0) });
+  return json({ ok: true, deleted: id });
+}
+
+async function authorized(request, env) {
+  const key = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
+  return !!env.ADMIN_KEY && (await sameSecret(key, env.ADMIN_KEY));
 }
 
 // Zamanlama saldırılarına karşı sabit süreli karşılaştırma
