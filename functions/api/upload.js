@@ -1,4 +1,4 @@
-import { MAX_FILES, MAX_SIZE, TYPES, json, newId, track } from '../../lib/shared.js';
+import { MAX_FILES, MAX_SIZE, TYPES, json, newId, sniffType, track } from '../../lib/shared.js';
 import { putImage } from '../../lib/storage.js';
 
 // Hatalar dil bağımsız kodlarla döner; mesajı tarayıcı kullanıcının dilinde gösterir.
@@ -18,24 +18,25 @@ export async function onRequestPost(context) {
   if (files.length < 2) return json({ error: 'min' }, 400);
   if (files.length > MAX_FILES) return json({ error: 'max', n: MAX_FILES }, 400);
   for (const f of files) {
-    if (!TYPES.includes(f.type)) return json({ error: 'type', name: f.name }, 400);
     if (f.size > MAX_SIZE) return json({ error: 'size', name: f.name }, 400);
   }
+
+  // Tür, dosyanın içeriğinden belirlenir; içi desteklenen bir resim değilse yükleme reddedilir
+  const buffers = await Promise.all(files.map((f) => f.arrayBuffer()));
+  const types = buffers.map(sniffType);
+  const bad = types.findIndex((type) => !TYPES.includes(type));
+  if (bad !== -1) return json({ error: 'type', name: files[bad].name }, 400);
 
   let id = newId();
   while (await env.IMAGES.get(`album:${id}`)) id = newId();
 
   const images = files.map((f, i) => ({
     name: (names[i] || '').trim().slice(0, 80) || `Image ${i + 1}`,
-    type: f.type,
+    type: types[i],
     size: f.size,
   }));
 
-  await Promise.all(
-    files.map(async (f, i) =>
-      putImage(env, `img:${id}:${i}`, await f.arrayBuffer(), f.type)
-    )
-  );
+  await Promise.all(buffers.map((buf, i) => putImage(env, `img:${id}:${i}`, buf, types[i])));
   await env.IMAGES.put(`album:${id}`, JSON.stringify({ title, images, created: Date.now() }));
   track(context, 'upload', { album: id, images: files.length, bytes: files.reduce((s, f) => s + f.size, 0) });
 

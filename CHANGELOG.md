@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.9 – 2026-10-30
+
+- Some screenshot tools save PNGs with a .jpg name. imgversus now looks at what's actually inside the file instead of trusting the name, so a PNG stays a PNG, including when you save it back from the comparison. Files that aren't really images get turned away.
+
 ## 1.2.8 – 2026-10-30
 
 - The example on the homepage got sharper. It now uses new screenshots captured as PNG, so there's less compression in the way of the details you're comparing.
