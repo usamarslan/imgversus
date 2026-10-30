@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.2.8 – 2026-10-30
+
+- The example on the homepage got sharper. It now uses new screenshots captured as PNG, so there's less compression in the way of the details you're comparing.
+
 ## 1.2.7 – 2026-10-29
 
 - New **1:1** button (or `N`): every pixel of the image lands on exactly one pixel of your screen, no scaling at all. It takes Windows/Mac display scaling into account, so it's really 1:1 even at 150% or on a Retina screen. Open a 4K screenshot fullscreen on a 4K monitor and that's exactly what you see.
