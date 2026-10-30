@@ -18,6 +18,8 @@ After a while I figured other people might need it too, so here it is. If you're
 - Click-to-switch (the default): click the image to flip between two images in place
 - Slider mode: drag a line across to reveal one image over the other
 - Image pickers in the top corners when you have more than two images
+- Link straight to a pair: `imgversus.com/a/Xk3pQ9aB/2/4` opens image 2 against image 4. The address bar follows whatever you pick, so "Copy link" always shares what you're looking at
+- Fix a typo or take it down: the browser you uploaded from can rename the title and images, or delete the whole comparison. Nobody else gets that option
 - True 1:1 view: one image pixel on one screen pixel, no scaling, with your display scaling (125%, 150%, Retina) taken into account
 - Fullscreen that's actually full: the bar and pickers get out of the way until you move the mouse to the top
 - The current scale is always shown in the corner, so you know whether you're looking at a scaled image
@@ -43,7 +45,11 @@ After a while I figured other people might need it too, so here it is. If you're
 
 ## Do links expire?
 
-No. A comparison stays up for as long as the site is running.
+No. A comparison stays up for as long as the site is running, unless you delete it yourself.
+
+## How does deleting work without an account?
+
+When you upload, the server hands your browser a random secret key and keeps only a hash of it. The key is saved in your browser (local storage), not in the share link, so people you send the link to can look but can't edit or delete anything. If you clear your browser data or switch devices, you lose the key and with it the option to edit or delete. In that case use the feedback button and I'll take it down.
 
 ## Privacy
 

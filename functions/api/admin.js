@@ -1,5 +1,5 @@
-import { ID_RE, json, track } from '../../lib/shared.js';
-import { deleteImage } from '../../lib/storage.js';
+import { ID_RE, bearer, json, sameSecret, track } from '../../lib/shared.js';
+import { deleteAlbum } from '../../lib/storage.js';
 
 // Yönetici özeti (/admin sayfası için). Sadece doğru ADMIN_KEY ile açılır; anahtar Cloudflare'da gizli değişken olarak durur.
 export async function onRequestGet({ request, env }) {
@@ -57,20 +57,11 @@ export async function onRequestDelete(context) {
 
   const album = await env.IMAGES.get(`album:${id}`, 'json');
   if (!album) return json({ error: 'notfound' }, 404);
-  await Promise.all(album.images.map((_, i) => deleteImage(env, `img:${id}:${i}`)));
-  await env.IMAGES.delete(`album:${id}`);
+  await deleteAlbum(env, id, album);
   track(context, 'delete', { album: id, images: album.images.length, bytes: album.images.reduce((s, im) => s + (im.size || 0), 0) });
   return json({ ok: true, deleted: id });
 }
 
 async function authorized(request, env) {
-  const key = (request.headers.get('authorization') || '').replace(/^Bearer\s+/i, '');
-  return !!env.ADMIN_KEY && (await sameSecret(key, env.ADMIN_KEY));
-}
-
-// Zamanlama saldırılarına karşı sabit süreli karşılaştırma
-async function sameSecret(a, b) {
-  const enc = new TextEncoder();
-  const [ha, hb] = await Promise.all([a, b].map((s) => crypto.subtle.digest('SHA-256', enc.encode(s))));
-  return crypto.subtle.timingSafeEqual(ha, hb);
+  return !!env.ADMIN_KEY && (await sameSecret(bearer(request), env.ADMIN_KEY));
 }

@@ -17,6 +17,18 @@ function toast(text) {
   toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
 }
 
+// Bu tarayıcıdan yüklenen kıyasların gizli anahtarları: { albümId: anahtar }.
+// Anahtar paylaşılan linkte yoktur; yalnızca onu bilen tarayıcı kıyası düzenleyip silebilir.
+const owned = {
+  all() { try { return JSON.parse(localStorage.getItem('imgversus:owned')) || {}; } catch { return {}; } },
+  get(id) { return this.all()[id] || ''; },
+  set(id, token) {
+    const all = this.all();
+    if (token) all[id] = token; else delete all[id];
+    try { localStorage.setItem('imgversus:owned', JSON.stringify(all)); } catch {}
+  },
+};
+
 function formatSize(bytes) {
   if (bytes < 1024 * 1024) return Math.max(1, Math.round(bytes / 1024)) + ' KB';
   return (bytes / 1024 / 1024).toFixed(1) + ' MB';
@@ -155,6 +167,7 @@ function publish() {
     let data = {};
     try { data = JSON.parse(xhr.responseText); } catch {}
     if (xhr.status === 200 && data.id) {
+      if (data.token) owned.set(data.id, data.token);
       location.assign(`/a/${data.id}?new=1`);
       return;
     }
@@ -176,6 +189,10 @@ function initUpload() {
   $('#upload').hidden = false;
   $('#viewer').hidden = true;
   setTitle();
+  if (new URLSearchParams(location.search).has('deleted')) {
+    history.replaceState(null, '', '/');
+    toast(t('deleted'));
+  }
   onLangChange(() => { setTitle(); renderList(); });
 
   const drop = $('#drop');
@@ -316,6 +333,7 @@ const viewer = (() => {
   const viewerEl = $('#viewer');
 
   let images = [];
+  let albumId = '';            // paylaşılan albümün kimliği (yerel önizlemede boş)
   let a = 0, b = 1;
   let mode = 'toggle';         // 'toggle' = tıkla-geç (varsayılan), 'slide' = kaydırıcı
   let shown = 'a';             // tıkla-geç modunda görünen taraf
@@ -333,12 +351,15 @@ const viewer = (() => {
 
   function open(album, opts = {}) {
     images = album.images;
+    albumId = album.id || '';
     a = 0; b = 1; pos = 0.5; z = 1; tx = 0; ty = 0; ready = false; shown = 'a';
+    // /a/<id>/2/4 linkinden gelen ikili (0'dan başlayan sıra numaraları)
+    const [pa, pb] = album.pair || [];
+    if (images[pa] && images[pb] && pa !== pb) { a = pa; b = pb; }
 
     $('#upload').hidden = true;
     $('#viewer').hidden = false;
-    $('#v-title').textContent = album.title || 'imgversus';
-    document.title = (album.title ? album.title + ' – ' : '') + 'imgversus';
+    setTitle(album.title);
     $('#v-back').hidden = !opts.local;
     $('#v-copy').hidden = !!opts.local;
 
@@ -389,7 +410,31 @@ const viewer = (() => {
     sel.disabled = images.length < 2;
   }
 
+  function setTitle(title) {
+    $('#v-title').textContent = title || 'imgversus';
+    document.title = (title ? title + ' – ' : '') + 'imgversus';
+  }
+
+  // Yükleyen başlığı ya da resim isimlerini değiştirince ekranı günceller
+  function rename(title, names) {
+    setTitle(title);
+    names.forEach((name, i) => { images[i].name = name; });
+    fillSelect(selA);
+    fillSelect(selB);
+    selA.value = a;
+    selB.value = b;
+  }
+
+  // Adres çubuğu o an bakılan ikiliyi gösterir (/a/<id>/2/4); "Linki kopyala" da bunu kopyalar.
+  // Varsayılan ikili (1'e karşı 2) için link sade kalır.
+  function updateUrl() {
+    if (!albumId) return;
+    const path = a === 0 && b === 1 ? `/a/${albumId}` : `/a/${albumId}/${a + 1}/${b + 1}`;
+    if (location.pathname !== path) history.replaceState(null, '', path);
+  }
+
   function show() {
+    updateUrl();
     selA.value = a;
     selB.value = b;
     imgA.src = images[a].src;
@@ -756,29 +801,122 @@ const viewer = (() => {
     });
   }
 
-  return { open, close };
+  return { open, close, rename };
 })();
+
+/* ======================= Yükleyenin düzenleme penceresi ======================= */
+
+// Kıyası bu tarayıcıdan yükleyen kişi başlığı ve resim isimlerini düzeltebilir ya da kıyası silebilir.
+// Başkaları bu düğmeyi hiç görmez; sunucu da anahtarı tutmayan isteği reddeder.
+function initOwner(id, album) {
+  const token = owned.get(id);
+  const btn = $('#v-edit');
+  btn.hidden = !token;
+  if (!token) return;
+
+  const dialog = $('#edit');
+  const form = $('#edit-form');
+  const title = $('#edit-title');
+  const list = $('#edit-names');
+  const msg = $('#edit-msg');
+  const save = $('#edit-save');
+  const del = $('#edit-delete');
+  const auth = { authorization: `Bearer ${token}` };
+
+  const fill = () => {
+    title.value = album.title || '';
+    list.replaceChildren(...album.images.map((im, i) => {
+      const row = document.createElement('label');
+      row.className = 'edit-row';
+      const num = document.createElement('span');
+      num.textContent = `${i + 1}.`;
+      const input = document.createElement('input');
+      input.className = 'field';
+      input.maxLength = 80;
+      input.value = im.name;
+      row.append(num, input);
+      return row;
+    }));
+    msg.textContent = '';
+  };
+
+  // Anahtar artık geçerli değilse (ör. kıyas yönetici tarafından silindiyse) düğmeyi kaldır
+  const lostAccess = () => {
+    owned.set(id, '');
+    btn.hidden = true;
+    dialog.close();
+  };
+
+  btn.onclick = () => { fill(); dialog.showModal(); };
+  $('#edit-cancel').onclick = () => dialog.close();
+
+  form.onsubmit = async (e) => {
+    e.preventDefault();
+    save.disabled = true;
+    msg.textContent = '';
+    try {
+      const names = [...list.querySelectorAll('input')].map((input) => input.value);
+      const res = await fetch(`/api/album/${id}`, {
+        method: 'PATCH',
+        headers: { ...auth, 'content-type': 'application/json' },
+        body: JSON.stringify({ title: title.value, names }),
+      });
+      if (res.status === 403 || res.status === 404) return lostAccess();
+      if (!res.ok) throw new Error('http');
+      const data = await res.json();
+      album.title = data.title;
+      data.images.forEach((im, i) => { album.images[i].name = im.name; });
+      viewer.rename(data.title, data.images.map((im) => im.name));
+      dialog.close();
+      toast(t('saved'));
+    } catch {
+      msg.textContent = t('editFail');
+    } finally {
+      save.disabled = false;
+    }
+  };
+
+  del.onclick = async () => {
+    if (!confirm(t('deleteConfirm'))) return;
+    del.disabled = true;
+    msg.textContent = '';
+    try {
+      const res = await fetch(`/api/album/${id}`, { method: 'DELETE', headers: auth });
+      if (res.status === 403) return lostAccess();
+      if (!res.ok && res.status !== 404) throw new Error('http');
+      owned.set(id, '');
+      location.assign('/?deleted=1');
+    } catch {
+      msg.textContent = t('editFail');
+      del.disabled = false;
+    }
+  };
+}
 
 /* ======================= Paylaşılan albüm ======================= */
 
-async function initAlbum(id) {
+async function initAlbum(id, pair) {
   $('#upload').hidden = true;
   $('#viewer').hidden = false;
   const status = $('#v-status');
   status.textContent = t('loading');
   try {
-    const res = await fetch(`/api/album/${id}`);
+    // Yükleyen az önce düzenlemiş olabilir; ona tarayıcı önbelleğindeki eski hâli gösterme
+    const res = await fetch(`/api/album/${id}`, owned.get(id) ? { cache: 'no-cache' } : {});
     if (res.status === 404) throw new Error('notfound');
     if (!res.ok) throw new Error('http');
     const album = await res.json();
-    viewer.open({
-      title: album.title,
-      images: album.images.map((im, i) => ({ src: `/i/${id}/${i}`, name: im.name })),
-    });
     if (new URLSearchParams(location.search).has('new')) {
       history.replaceState(null, '', `/a/${id}`);
       toast(t('linkReady'));
     }
+    viewer.open({
+      id,
+      pair,
+      title: album.title,
+      images: album.images.map((im, i) => ({ src: `/i/${id}/${i}`, name: im.name })),
+    });
+    initOwner(id, album);
   } catch (err) {
     const showError = () => {
       if (err.message !== 'notfound') { status.textContent = t('loadError'); return; }
@@ -794,6 +932,6 @@ async function initAlbum(id) {
 
 initLangSelects();
 if (typeof APP_VERSION !== 'undefined') $('#version').textContent = `v${APP_VERSION}`;
-const match = location.pathname.match(/^\/a\/([A-Za-z0-9]{4,32})\/?$/);
-if (match) initAlbum(match[1]);
+const match = location.pathname.match(/^\/a\/([A-Za-z0-9]{4,32})(?:\/(\d{1,2})\/(\d{1,2}))?\/?$/);
+if (match) initAlbum(match[1], match[2] ? [match[2] - 1, match[3] - 1] : null);
 else initUpload();

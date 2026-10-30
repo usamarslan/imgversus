@@ -1,4 +1,4 @@
-import { MAX_FILES, MAX_SIZE, TYPES, json, newId, sniffType, track } from '../../lib/shared.js';
+import { MAX_FILES, MAX_SIZE, TYPES, json, newId, newToken, sha256Hex, sniffType, track } from '../../lib/shared.js';
 import { putImage } from '../../lib/storage.js';
 
 // Hatalar dil bağımsız kodlarla döner; mesajı tarayıcı kullanıcının dilinde gösterir.
@@ -37,8 +37,10 @@ export async function onRequestPost(context) {
   }));
 
   await Promise.all(buffers.map((buf, i) => putImage(env, `img:${id}:${i}`, buf, types[i])));
-  await env.IMAGES.put(`album:${id}`, JSON.stringify({ title, images, created: Date.now() }));
+  const token = newToken();
+  const owner = await sha256Hex(token);
+  await env.IMAGES.put(`album:${id}`, JSON.stringify({ title, images, created: Date.now(), owner }));
   track(context, 'upload', { album: id, images: files.length, bytes: files.reduce((s, f) => s + f.size, 0) });
 
-  return json({ id });
+  return json({ id, token });
 }

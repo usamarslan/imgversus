@@ -2,6 +2,11 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.3.0 – 2026-10-30
+
+- You can link to a specific pair now. `imgversus.com/a/<id>/2/4` opens image 2 against image 4, and the address bar updates as you pick images, so "Copy link" shares exactly what you're looking at. The preview on Reddit or Discord shows that pair too. Handy when one comparison has four or five modes in it.
+- Uploaded the wrong screenshot or typo'd a label? The browser you uploaded from gets an edit button (✎) on the comparison. You can fix the title and image names, or delete the whole thing along with its images. Nobody else sees that button, and the share link doesn't give anyone that access. Works for comparisons uploaded from now on.
+
 ## 1.2.9 – 2026-10-30
 
 - Some screenshot tools save PNGs with a .jpg name. imgversus now looks at what's actually inside the file instead of trusting the name, so a PNG stays a PNG, including when you save it back from the comparison. Files that aren't really images get turned away.

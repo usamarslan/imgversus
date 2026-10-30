@@ -103,6 +103,22 @@
     </form>
   </dialog>
 
+  <!-- Yükleyenin düzenleme penceresi -->
+  <dialog id="edit" class="dialog">
+    <form id="edit-form">
+      <h2 data-i18n="editTitle"></h2>
+      <p class="muted" data-i18n="editIntro"></p>
+      <input id="edit-title" class="field" maxlength="120" data-i18n-ph="titlePh">
+      <div id="edit-names" class="edit-names"></div>
+      <p id="edit-msg" class="msg" role="status"></p>
+      <div class="actions edit-actions">
+        <button type="button" id="edit-delete" class="btn danger" data-i18n="editDelete"></button>
+        <button type="button" id="edit-cancel" class="btn" data-i18n="fbCancel"></button>
+        <button type="submit" id="edit-save" class="btn primary" data-i18n="editSave"></button>
+      </div>
+    </form>
+  </dialog>
+
   <!-- Karşılaştırma ekranı -->
   <section id="viewer" hidden>
     <header class="vbar">
@@ -113,6 +129,7 @@
         <button id="m-slide" data-i18n-aria="modeSlide" data-i18n-tip="tipSlide" data-key="M" aria-pressed="false"><span class="ico">⇹</span><span class="lbl" data-i18n="modeSlide"></span></button>
       </div>
       <div class="vactions">
+        <button id="v-edit" class="btn icon" data-i18n-aria="editBtn" data-i18n-title="editBtn" hidden>✎</button>
         <button id="v-native" class="btn icon native" data-i18n-aria="nativeSize" aria-pressed="false">1:1</button>
         <button id="v-full" class="btn icon" hidden>⛶</button>
         <button id="v-back" class="btn" data-i18n="back" hidden></button>

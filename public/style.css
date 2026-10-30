@@ -272,6 +272,15 @@ a { color: inherit; }
 .dialog .actions { margin-top: 12px; }
 .hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
 
+/* Yükleyenin düzenleme penceresi */
+.edit-names { display: grid; gap: 8px; margin-top: 12px; max-height: 50vh; overflow-y: auto; }
+.edit-row { display: flex; align-items: center; gap: 8px; }
+.edit-row span { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 1.6em; text-align: right; }
+.edit-row .field { margin: 0; flex: 1; min-width: 0; }
+.edit-actions .danger { margin-right: auto; }
+.btn.danger { color: var(--danger); }
+.btn.danger:hover:not(:disabled) { border-color: var(--danger); }
+
 /* ---------- Hakkında ve changelog ---------- */
 .about { margin-top: 40px; padding: 20px 22px; background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); }
 .about h2 { margin: 0 0 8px; font-size: 18px; }
