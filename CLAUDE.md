@@ -85,7 +85,7 @@ scripts/                 build-meta.mjs, stats.mjs (npm run stats), feedback.mjs
 - Hesap Üsame'nin. Alan adı Cloudflare Registrar'da (otomatik yenileme açık olmalı).
 - E-posta yönlendirme: `feedback@imgversus.com` → Üsame'nin kişisel adresi.
 - R2 ücretli plan açık; 9 GB'ta fatura uyarısı kurulu (ücretsiz kota 10 GB).
-- Kod dosyaları (`app.js`, `style.css`, `meta.js`) tarayıcıda 4 saat önbellekte kalıyor (alan adının Browser Cache TTL ayarı); HTML her seferinde yenileniyor. Güncellemeden sonra kullanıcılar bir süre eski kodu görebilir; aşağıda yapılacaklarda.
+- Kod dosyaları (`app.js`, `style.css`, `meta.js`) tarayıcıda 4 saat önbellekte kalıyor (alan adının Browser Cache TTL ayarı); HTML her seferinde yenileniyor. 1.3.1'den beri `functions/_middleware.js` HTML'deki `.js`/`.css` adreslerine `?v=<package.json sürümü>` ekliyor, yeni sürümde tarayıcı taze dosyayı alıyor. Yeni bir `<script src>` ya da stylesheet eklerken `/` ile başlayan adres kullan ki sürüm eklensin.
 
 ## Test ederken
 
@@ -96,7 +96,6 @@ scripts/                 build-meta.mjs, stats.mjs (npm run stats), feedback.mjs
 
 ## Yapılacaklar / açık konular
 
-- [ ] **Önbellek düzeltmesi:** sürümde `app.js?v=<sürüm>` gibi adres ekleyip eski kodun 4 saat takılmasını önle (Üsame'ye önerildi, onay bekliyor).
 - [ ] Görüntüleyicide isteğe bağlı Lanczos filtresi (sadece "ekrana sığdır" görünümü için; varsayılan değil, 1:1 asıl doğru görünüm).
 - [ ] `docs/KURULUM.md` bazı yerlerde eski (varsayılan modu kaydırıcı diyor, silme yok diyor); güncellenmeli.
 - [ ] Google Search Console'a `https://imgversus.com/sitemap.xml` gönderilmesi (Üsame'nin işi).

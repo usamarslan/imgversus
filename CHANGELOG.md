@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.3.1 – 2026-10-31
+
+- After an update, your browser could keep running the old version of the site for a few hours, so a fix I'd just shipped didn't reach you right away. Now each version loads its own fresh files, and you get the new one as soon as it's out.
+
 ## 1.3.0 – 2026-10-30
 
 - You can link to a specific pair now. `imgversus.com/a/<id>/2/4` opens image 2 against image 4, and the address bar updates as you pick images, so "Copy link" shares exactly what you're looking at. The preview on Reddit or Discord shows that pair too. Handy when one comparison has four or five modes in it.
