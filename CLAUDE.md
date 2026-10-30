@@ -1,6 +1,6 @@
 # imgversus – Claude için proje notları
 
-Bu dosya, bu projede çalışan Claude oturumlarının kaldığı yerden devam edebilmesi için. Proje sahibi Üsame (GitHub: `usamarslan`). İlk sürümden 1.3.0'a kadar her şey Claude ile yapıldı; o sohbetin kararları aşağıda.
+Bu dosya, bu projede çalışan Claude oturumlarının kaldığı yerden devam edebilmesi için. Proje sahibi Üsame (GitHub: `usamarslan`). İlk sürümden 1.3.0'a kadar her şey başka bir Claude hesabında yapıldı, 1.3.1'den beri bu hesapta devam ediyor; kararlar aşağıda.
 
 ## Proje
 
@@ -37,6 +37,9 @@ Node.js sistemde kurulu olmalı (`node -v`). Değilse nodejs.org'dan LTS kurulur
 5. `git push origin HEAD --follow-tags`
 6. `npm run deploy` (`predeploy` önce `scripts/build-meta.mjs` çalıştırır: `meta.js`, `changelog.md`, `sitemap.xml` üretir; bunlar git'e girmez).
 7. Canlıda kontrol: `curl -s https://imgversus.com/meta.js` yeni sürümü göstermeli.
+8. GitHub sürüm sayfası (Üsame'ye "her sürümde açılıyor" diye söz verildi, atlama): `gh release create vX.Y.Z --title vX.Y.Z --notes "<CHANGELOG maddeleri>"`. `gh` kurulu değilse tarayıcıdan `https://github.com/usamarslan/imgversus/releases/new?tag=vX.Y.Z&title=vX.Y.Z&body=<maddeler>` açıp Publish release (GitHub oturumu tarayıcıda açık).
+
+Sadece CLAUDE.md, docs ya da `.gitignore` gibi siteyi değiştirmeyen düzenlemelerde sürüm artmaz, deploy gerekmez.
 
 ## Yapı
 
@@ -82,9 +85,10 @@ scripts/                 build-meta.mjs, stats.mjs (npm run stats), feedback.mjs
 
 ## Cloudflare tarafı
 
-- Hesap Üsame'nin. Alan adı Cloudflare Registrar'da (otomatik yenileme açık olmalı).
-- E-posta yönlendirme: `feedback@imgversus.com` → Üsame'nin kişisel adresi.
-- R2 ücretli plan açık; 9 GB'ta fatura uyarısı kurulu (ücretsiz kota 10 GB).
+- Hesap Üsame'nin. Alan adı Cloudflare Registrar'da, 29 Ekim 2027'ye kadar kayıtlı, otomatik yenileme açık.
+- E-posta yönlendirme: `feedback@imgversus.com` → Üsame'nin kişisel adresi (Email Routing kuralı). Bu adresten cevap gönderme kurulmadı; formdan mesaj gelince e-posta bildirimi de yok (mesajlar sadece KV'de).
+- R2 ücretli plan açık; 9 GB'ta fatura uyarısı kurulu (eşik bayt cinsinden: 9663676416; ücretsiz kota 10 GB).
+- Cloudflare Web Analytics açık (31 Ekim 2026); Cloudflare çerezsiz ölçüm kodunu HTML'e kendisi ekliyor.
 - Kod dosyaları (`app.js`, `style.css`, `meta.js`) tarayıcıda 4 saat önbellekte kalıyor (alan adının Browser Cache TTL ayarı); HTML her seferinde yenileniyor. 1.3.1'den beri `functions/_middleware.js` HTML'deki `.js`/`.css` adreslerine `?v=<package.json sürümü>` ekliyor, yeni sürümde tarayıcı taze dosyayı alıyor. Yeni bir `<script src>` ya da stylesheet eklerken `/` ile başlayan adres kullan ki sürüm eklensin.
 
 ## Test ederken
@@ -98,12 +102,18 @@ scripts/                 build-meta.mjs, stats.mjs (npm run stats), feedback.mjs
 
 - [ ] Görüntüleyicide isteğe bağlı Lanczos filtresi (sadece "ekrana sığdır" görünümü için; varsayılan değil, 1:1 asıl doğru görünüm).
 - [ ] `docs/KURULUM.md` bazı yerlerde eski (varsayılan modu kaydırıcı diyor, silme yok diyor); güncellenmeli.
-- [ ] Google Search Console'a `https://imgversus.com/sitemap.xml` gönderilmesi (Üsame'nin işi).
-- [ ] GitHub Sponsors başvurusu (Üsame'nin işi).
-- [ ] Cloudflare Web Analytics'i açmak (Workers & Pages → imgversus → Metrics).
-- [ ] AlternativeTo'ya imgsli alternatifi olarak eklemek.
-- [ ] İsteğe bağlı: hakkında metnini diğer 16 dile çevirmek; kötüye kullanıma karşı Turnstile.
+- [ ] **Lisans kararı:** repoda LICENSE yok (kod görünür ama yasal olarak kullanılamaz). v1.0'da MIT önerildi, karar verilmedi. Üsame şimdilik "böyle kalsın" dedi (AlternativeTo'da "Source available").
+- [ ] Canlıda hiç uçtan uca denenmedi: yükleyenin ✎ ile düzenleme/silmesi ve adı .jpg olan PNG'nin PNG kaydedilmesi. İlk gerçek yüklemede kontrol et.
+- [ ] İsteğe bağlı: hakkında metnini diğer 16 dile çevirmek; kötüye kullanıma karşı Turnstile; formdan mesaj gelince e-posta bildirimi; feedback@ adresinden cevap gönderebilme; ana sayfaya görünür bir "imgsli alternative" bölümü (önerildi, cevap bekliyor).
+- [ ] Ertelendi: marka tescili (TÜRKPATENT sınıf 42, ~9.800 TL resmi harç; site tutarsa).
+
+Bitenler (31 Ekim 2026): önbellek düzeltmesi (1.3.1), Search Console'da sitemap gönderildi (alan adı mülkü, TXT ile doğrulanmış), Web Analytics açıldı, GitHub Sponsors başvurusu yapıldı (GitHub onayı bekliyor), AlternativeTo'ya eklendi (normal onay sırasında; imgsli, imgico, Slowpoke Pics, Improve ImgSLI, JuxtaposeJS, BAGen, Image Comparison & Analysis Tool alternatif olarak bağlandı, onları da AlternativeTo onaylayacak). AlternativeTo'nun ücretli hızlı inceleme teklifi (19/29 $) kabul edilmedi.
 
 ## Pazarlama notları
 
 Paylaşım fikirleri Üsame'nin masaüstündeki "imgversus post fikirleri.pdf" dosyasında. Öne çıkarılacaklar: imgsli alternatifi, sıkıştırmasız PNG, gerçek 1:1 tam ekran, belirli ikiliye link, hesap gerektirmemesi.
+
+- En yakın rakip **imgico** (AlternativeTo'da kendini "imgsli'nin yerine geçen" diye tanıtıyor; 2–10 resim, kaydırıcı, kalıcı link). Farkımız: 1:1, sıkıştırmasız PNG, ikili link, 12 resim, 18 dil.
+- Reddit'te "Full disclosure, it's mine" demek kuralı; gizli reklam yapma.
+- AlternativeTo için ikon ve ekran görüntüleri Üsame'nin masaüstünde `imgversus-alternativeto/` klasöründe.
+- İlk sürümden 1.3.0'a kadarki eski sohbetin dökümü proje klasöründe `imgversus sohbet geçmişi.pdf` (git dışında, kişisel; repoya girmemeli).

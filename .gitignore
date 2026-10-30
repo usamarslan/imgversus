@@ -5,3 +5,5 @@ public/changelog.md
 .admin-key
 .dev.vars
 public/sitemap.xml
+.DS_Store
+*.pdf
