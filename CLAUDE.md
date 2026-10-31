@@ -37,7 +37,7 @@ Node.js sistemde kurulu olmalı (`node -v`). Değilse nodejs.org'dan LTS kurulur
 5. `git push origin HEAD --follow-tags`
 6. `npm run deploy` (`predeploy` önce `scripts/build-meta.mjs` çalıştırır: `meta.js`, `changelog.md`, `sitemap.xml` üretir; bunlar git'e girmez).
 7. Canlıda kontrol: `curl -s https://imgversus.com/meta.js` yeni sürümü göstermeli.
-8. GitHub sürüm sayfası (Üsame'ye "her sürümde açılıyor" diye söz verildi, atlama): `gh release create vX.Y.Z --title vX.Y.Z --notes "<CHANGELOG maddeleri>"`. `gh` kurulu değilse tarayıcıdan `https://github.com/usamarslan/imgversus/releases/new?tag=vX.Y.Z&title=vX.Y.Z&body=<maddeler>` açıp Publish release (GitHub oturumu tarayıcıda açık).
+8. GitHub sürüm sayfası (Üsame'ye "her sürümde açılıyor" diye söz verildi, atlama): `gh release create vX.Y.Z --title vX.Y.Z --notes "<CHANGELOG maddeleri>"`. `gh` bu Mac'te `~/.local/bin/gh` (PATH'te değil, tam yoluyla çağır; giriş anahtar zincirinde, 2FA tekrar istemez). Güvenlik denetimi `release create`'i engellerse komutu Üsame'ye kendi Terminal'inde çalıştırması için ver. `gh` yoksa tarayıcıdan `https://github.com/usamarslan/imgversus/releases/new?tag=vX.Y.Z&title=vX.Y.Z&body=<maddeler>` açıp Publish release (GitHub oturumu tarayıcıda açık).
 
 Sadece CLAUDE.md, docs ya da `.gitignore` gibi siteyi değiştirmeyen düzenlemelerde sürüm artmaz, deploy gerekmez.
 
