@@ -50,7 +50,7 @@ public/i18n.js           18 dil (LANGS + STRINGS), dil algılama, data-i18n* öz
 public/style.css         Koyu tema; değişkenler :root'ta
 public/admin.html        /admin: Üsame'nin istatistik ve silme sayfası (ADMIN_KEY ile)
 public/changelog.html    /changelog: changelog.md'yi gösterir
-public/sample/           Ana sayfa örneğinin 1920px kopyaları (asıl kıyas: /a/D5hMptW8)
+public/sample/           Ana sayfadaki iki örneğin 1280px JPEG kopyaları (asıl kıyaslar: /a/AidxRGTH/2/3 ve /a/HzMq2rgy/3/4)
 functions/_middleware.js imgversus.pages.dev ve www → imgversus.com 301
 functions/a/[id].js      /a/<id> sayfası + link önizleme (Open Graph) etiketleri
 functions/a/[id]/[x]/[y].js  /a/<id>/2/4 ikili linkleri (aynı işleyici)

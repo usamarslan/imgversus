@@ -2,6 +2,10 @@
 
 Every update to imgversus gets a version number and a short note here. Most updates bump the last number (1.2.1, 1.2.2, …); bigger milestones bump the middle or first one.
 
+## 1.3.2 – 2026-10-31
+
+- The homepage has two examples now, side by side: The Witcher 3 Remastered and Cyberpunk 2077, both PS5 Pro ray tracing against path tracing on PC. Each one flips on its own, and "Open full size" takes you straight to that exact pair in the full 4K comparison.
+
 ## 1.3.1 – 2026-10-31
 
 - After an update, your browser could keep running the old version of the site for a few hours, so a fix I'd just shipped didn't reach you right away. Now each version loads its own fresh files, and you get the new one as soon as it's out.

@@ -53,19 +53,37 @@
       <p class="fine" data-i18n="fine"></p>
       <p class="fine retention" data-i18n="retention"></p>
 
-      <!-- Ana sayfadaki örnek karşılaştırma: tıklayınca iki resim arasında geçer -->
-      <section class="demo" aria-labelledby="demo-title">
-        <div class="demo-head">
-          <h2 id="demo-title"><span data-i18n="demoTitle"></span><span class="demo-name">Witcher 3 Remastered · PS5 Pro</span></h2>
-          <a class="demo-open" href="/a/D5hMptW8" data-i18n="demoOpen"></a>
-        </div>
-        <div class="demo-tabs" role="group">
-          <button type="button" class="left active" data-i="0" aria-pressed="true">Performance</button>
-          <button type="button" class="right" data-i="1" aria-pressed="false">Ray Tracing</button>
-        </div>
-        <div class="demo-box" id="demo-box" role="button" tabindex="0" data-i18n-aria="hintToggle">
-          <img src="/sample/performance.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PS5 Pro, Performance mode" draggable="false">
-          <img src="/sample/raytracing.jpg" width="1920" height="1080" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PS5 Pro, Ray Tracing mode" draggable="false" class="b">
+      <!-- Ana sayfadaki örnek karşılaştırmalar: yan yana iki kıyas, her biri tıklayınca iki resim arasında geçer -->
+      <section class="demo">
+        <div class="demo-grid">
+          <article class="demo-card" aria-labelledby="demo-title-1">
+            <div class="demo-head">
+              <h2 id="demo-title-1"><span data-i18n="demoTitle"></span><span class="demo-name">Witcher 3 Remastered</span></h2>
+              <a class="demo-open" href="/a/AidxRGTH/2/3" data-i18n="demoOpen"></a>
+            </div>
+            <div class="demo-tabs" role="group">
+              <button type="button" class="left active" aria-pressed="true">PS5 Pro Ray Tracing</button>
+              <button type="button" class="right" aria-pressed="false">PC Path Tracing</button>
+            </div>
+            <div class="demo-box" role="button" tabindex="0" data-i18n-aria="hintToggle">
+              <img src="/sample/witcher3-ps5pro-rt.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PS5 Pro, Ray Tracing mode" draggable="false">
+              <img src="/sample/witcher3-pc-pt.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="The Witcher 3 Remastered on PC with path tracing" draggable="false" class="b">
+            </div>
+          </article>
+          <article class="demo-card" aria-labelledby="demo-title-2">
+            <div class="demo-head">
+              <h2 id="demo-title-2"><span data-i18n="demoTitle"></span><span class="demo-name">Cyberpunk 2077</span></h2>
+              <a class="demo-open" href="/a/HzMq2rgy/3/4" data-i18n="demoOpen"></a>
+            </div>
+            <div class="demo-tabs" role="group">
+              <button type="button" class="left active" aria-pressed="true">PS5 Pro Ray Tracing Pro</button>
+              <button type="button" class="right" aria-pressed="false">PC Path Tracing</button>
+            </div>
+            <div class="demo-box" role="button" tabindex="0" data-i18n-aria="hintToggle">
+              <img src="/sample/cyberpunk-ps5pro-rtpro.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Cyberpunk 2077 on PS5 Pro, Ray Tracing Pro mode" draggable="false">
+              <img src="/sample/cyberpunk-pc-pt.jpg" width="1280" height="720" loading="lazy" decoding="async" alt="Cyberpunk 2077 on PC with path tracing" draggable="false" class="b">
+            </div>
+          </article>
         </div>
         <p class="demo-hint" data-i18n="hintToggle"></p>
       </section>

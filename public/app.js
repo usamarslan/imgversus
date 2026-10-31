@@ -226,11 +226,16 @@ function initUpload() {
 
 /* ======================= Ana sayfa örneği ======================= */
 
-// Örnek karşılaştırma: tıklayınca ya da Space'e basınca resim değişir. Kimse dokunmadıysa ve
-// ekranda görünüyorsa kendi kendine birkaç saniyede bir geçer; ilk etkileşimde durur.
+// Örnek karşılaştırmalar: tıklayınca ya da Space'e basınca resim değişir. Kimse dokunmadıysa ve
+// ekranda görünüyorsa kendi kendine birkaç saniyede bir geçer; ilk etkileşimde o kıyas durur.
+// Her kıyas kendi başına çalışır.
 function initDemo() {
-  const box = $('#demo-box');
-  const tabs = [...document.querySelectorAll('.demo-tabs button')];
+  document.querySelectorAll('.demo-card').forEach(initDemoCard);
+}
+
+function initDemoCard(card) {
+  const box = card.querySelector('.demo-box');
+  const tabs = [...card.querySelectorAll('.demo-tabs button')];
   let shown = 0;
   let auto = !matchMedia('(prefers-reduced-motion: reduce)').matches;
   let visible = false;
